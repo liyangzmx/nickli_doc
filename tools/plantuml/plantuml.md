@@ -31,7 +31,7 @@ PlantUML对输出的图像大小有限制, 会导致很大的图不能以稍高�
 ```
 
 ## 图例
-![Demo](MediaPlayer.png)
+![Demo](./MediaPlayer.png)
 
 ## 范例
 ```
