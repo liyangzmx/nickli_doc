@@ -19,7 +19,11 @@ Repo(源码库:[repo](https://gerrit.googlesource.com/git-repo/+/refs/heads/mast
 ## 设备选择
 **为什么先选择设备而不是先获取源码?**  
 这是因为你选择的设备可能决定了您使用的首选分支, 所以您应该先看下Google提供的文档: [代号、标记和 Build 号](https://source.android.google.cn/setup/start/build-numbers?hl=zh-cn), 而对于Google推荐的设备选择: [选择设备 build](https://source.android.google.cn/setup/build/running?hl=zh-cn#selecting-device-build), 大可不必购买最新的Android手机或者一些奇怪的开发板, 国内有很多的翻新机会是更有性价比的选择~  
-您选择的设备讲决定了您的lunch选项, 这在[编译 Android - 选择目标](https://source.android.google.cn/setup/build/building?hl=zh-cn#choose-a-target)中会提及的.
+
+**注意:** 尽量选择已解锁的版本, 虽然Google提供了相应的解锁参考文档: [解锁引导加载程序](https://source.android.google.cn/setup/build/running?hl=zh-cn#unlocking-the-bootloader), 但文档中的内容不**总是可用**的, 所以为了节省不必要的麻烦, 可以优先提出解锁的要求, 但这可能需要支付少量的"**手续费**". 这点其实在Google的参考文档([Android 刷写工具 - 准备设备](https://source.android.google.cn/setup/contribute/flash?hl=zh-cn#preparing-your-device))中有对应的提示:  
+"**有些设备需要运营商干预才能解锁。如需了解详情，请与您的运营商联系。**"
+
+选择的设备讲决定了您的lunch选项, 这在[编译 Android - 选择目标](https://source.android.google.cn/setup/build/building?hl=zh-cn#choose-a-target)中会有所提及.
 
 **如何根据设备选择分支?**  
 在[代号、标记和 Build 号](https://source.android.google.cn/setup/start/build-numbers?hl=zh-cn)中, 如果您选择了Google Pixel XL, 那么请搜索"**Pixel XL**", 那么你将看到它在表给中的项目:
@@ -45,3 +49,7 @@ Google官方的参考: [源代码控制工作流程](https://source.android.goog
 
 
 ## Build
+迄今为止, 应该已经通过repo拉取了android-10.0.0_r17分支的AOSP源码, 并且解压好了驱动二进制文件, 此时在aosp目录下, 可以看到多出来了一个vendor目录.  
+对于构建, 你可以先跳过[Soong 构建系统](https://source.android.google.cn/setup/build?hl=zh-cn)的章节, 因为对单纯的编译而言, 现在暂时不需要对这个文档有太多关注.  
+
+对于编译, 参考[编译 Android](https://source.android.google.cn/setup/build/building?hl=zh-cn)开始编译过程吧, 特别的: 如果你选择了Pixel XL, 那么你应该执行的是: `lunch aosp_marlin-userdebug`, 其它的选择, 以[编译 Android - 选择目标](https://source.android.google.cn/setup/build/building?hl=zh-cn#choose-a-target)为准.  
