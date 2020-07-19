@@ -26,6 +26,7 @@ Repo(源码库:[repo](https://gerrit.googlesource.com/git-repo/+/refs/heads/mast
 |Build	|标记	|版本	|支持的设备	|安全补丁程序级别|
 |:-|:-|:-|:-|:-|  
 |QP1A.191005.007.A3	|android-10.0.0_r17	|Android10	|Pixel XL、Pixel	|2019-10-06|
+
 表格中的"**标记**"就是您执行`repo init ***** -b <分支>`时的分支名称.
 
 但是无论选择那种设备, 如果你想编译出来一个能用的系统, 你最好看看这篇资料(以Google Pixel为例): [Pixel XL的驱动程序二进制文件](pixel_drivers.md), 这个步骤可以提前做, 后面会用上
