@@ -16,6 +16,7 @@
 
 ## Embedded
 * [开始](emb/setup.md)
+* [C内联汇编(ARM)](emb/arm_asm.md)
 ---
 
 ## Libraries
