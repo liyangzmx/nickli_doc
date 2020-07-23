@@ -1,4 +1,4 @@
-# CURL(7.71.1) for Android(有运行问题)
+# libcurl(7.71.1) for Android
 
 ## 官方链接
 [https://curl.haxx.se/libcurl/](https://curl.haxx.se/libcurl/)
@@ -11,15 +11,15 @@ tar xvf curl-7.71.1.tar.gz
 cd curl-7.71.1
 ```
 
-设置环境变量:
+设置环境变量():
 ```
 export NDK=~/Android/Sdk/ndk/21.3.6528147/
 export HOST_TAG=linux-x86_64
 export TOOLCHAIN=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
 export AR=$TOOLCHAIN/bin/aarch64-linux-android-ar
 export AS=$TOOLCHAIN/bin/aarch64-linux-android-as
-export CC=$TOOLCHAIN/bin/aarch64-linux-android29-clang
-export CXX=$TOOLCHAIN/bin/aarch64-linux-android29-clang++
+export CC=$TOOLCHAIN/bin/aarch64-linux-android23-clang
+export CXX=$TOOLCHAIN/bin/aarch64-linux-android23-clang++
 export LD=$TOOLCHAIN/bin/aarch64-linux-android-ld
 export RANLIB=$TOOLCHAIN/bin/aarch64-linux-android-ranlib
 export STRIP=$TOOLCHAIN/bin/aarch64-linux-android-strip

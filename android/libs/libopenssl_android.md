@@ -17,11 +17,6 @@ tar xvf openssl-1.1.1g.tar.gz
 cd openssl-1.1.1g/
 ```
 
-下载脚本:
-```
-wget https://wiki.openssl.org/images/7/70/Setenv-android.sh
-```
-
 设置环境变量:
 ```
 export ANDROID_NDK_HOME=~/Android/Sdk/ndk/21.3.6528147/
@@ -30,13 +25,13 @@ export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
 
 配置/编译(**arm64**):
 ```
-./Configure android-arm64 -D__ANDROID_API__=29 no-tests shared --prefix=`pwd`/install/
+./Configure android-arm64 -D__ANDROID_API__=23 no-tests shared --prefix=`pwd`/install/
 make -j8
 ```
 
-配置/编译(**arm64**):
+配置/编译(**arm**):
 ```
-./Configure android-arm -D__ANDROID_API__=29
+./Configure android-arm -D__ANDROID_API__=23
 make -j8
 ```
 
