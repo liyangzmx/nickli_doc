@@ -2,14 +2,14 @@
 
 # 目录
 ## Android
-### Build
-* [AOSP Build](android/build/tutorial.md)
-
 ### ROM
-* [Pixel XL的驱动程序二进制文件](android/rom/pixel_drivers.md)
+* [AOSP Build](android/rom/../ROM/tutorial.md)
+* [Pixel XL的驱动程序二进制文件](android/ROM/pixel_drivers.md)
 
-### Security
-* [OpenSSL for Android](security/openssl_android.md)
+### Libs
+* [libopenSSL](android/libs/openssl_android.md)
+* [libevent](android/libs/libevent_android.md)
+* [libcurl(7.71.1) for Android(有运行问题)](android/libs/curl_android.md)
 
 ---
 
@@ -22,10 +22,6 @@
 * [开始](emb/setup.md)
 * [C内联汇编(ARM)](emb/arm_asm.md)
 ---
-
-## Libraries
-### FFmpeg
-### VLC
 
 ---
 

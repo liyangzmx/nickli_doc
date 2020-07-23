@@ -30,7 +30,7 @@ export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
 
 配置/编译(**arm64**):
 ```
-./Configure android-arm64 -D__ANDROID_API__=29
+./Configure android-arm64 -D__ANDROID_API__=29 no-tests shared --prefix=`pwd`/install/
 make -j8
 ```
 
@@ -47,7 +47,7 @@ cp libssl.so.1.1 $APP_PROJECT_PATH/app/libs/arm64-v8a/libssl.so
 cp libcrypto.so.1.1 $APP_PROJECT_PATH/app/libs/arm64-v8a/libcrypto.so
 cp libssl.so.1.1 $APP_PROJECT_PATH/app/libs/armeabi-v7a/libssl.so
 cp libcrypto.so.1.1 $APP_PROJECT_PATH/app/libs/armeabi-v7a/libcrypto.so
-cp -rf include/ $APP_PROJECT_PATH/app/src/main/cpp/
+cp -r include/ $APP_PROJECT_PATH/app/src/main/cpp/
 ```
 
 添加如下内容到CMakeLists.txt(它通常在: **app/src/main/cpp/CMakeLists.txt**):
@@ -111,6 +111,16 @@ dependencies {
 }
 ```
 
+检查**System.loadLibrary**():
+```
+static {
+    System.loadLibrary("crypto");
+    System.loadLibrary("ssl");
+    System.loadLibrary("native-lib");
+}
+```
+**注意:** 特别注意上述库的**加载顺序!!!**
+
 **native-lib.c**中使用**HMAC()**的例子:
 ```
 #include <openssl/hmac.h>
@@ -151,13 +161,3 @@ public native byte[] HMAC(byte[] input);
         tv.setText(new String(HMAC(inputStr.getBytes())));
     }
 ```
-
-检查**System.loadLibrary**():
-```
-static {
-    System.loadLibrary("crypto");
-    System.loadLibrary("ssl");
-    System.loadLibrary("native-lib");
-}
-```
-**注意:** 特别注意上述库的**加载顺序!!!**
