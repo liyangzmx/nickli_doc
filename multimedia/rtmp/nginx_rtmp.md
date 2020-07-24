@@ -37,3 +37,8 @@ sudo apt install ffmpeg
 ```
 ffmpeg -re -i big_buck_bunny.mp4 -f flv rtmp://127.0.0.1:1935/live
 ```
+
+测试播放:
+```
+ffmpeg -re -i big_buck_bunny.mp4 -f flv rtmp://127.0.0.1:1935/live
+```
