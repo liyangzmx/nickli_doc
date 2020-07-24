@@ -27,8 +27,8 @@
 ---
 
 ## Tools
-* [PlantUML - VSCode+PlantUML插件绘制软件时序图demo](tools/plantuml/plantuml.md)
-* [CMake - VSCode+CMake构建基本的cpp应用]
+* [CMake - VSCode+CMake构建基本的cpp应用](tools/plantuml/cmake/cmake_vscode.md)
+* [PlantUML - VSCode+PlantUML插件绘制软件时序图](tools/plantuml/plantuml.md)
 
 ---
 
