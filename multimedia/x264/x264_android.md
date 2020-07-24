@@ -39,3 +39,5 @@ make install
 cp android/arm64-v8a/lib/libx264.so.161 $APP_PROJECT_PATH/app/libs/arm64-v8a/
 cp -r include/ $APP_PROJECT_PATH/app/src/main/cpp/
 ```
+
+通常不需要主动集成, 保证其在**$APP_PROJECT_PATH/app/libs/arm64-v8a/**即可

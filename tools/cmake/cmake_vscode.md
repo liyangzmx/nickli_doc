@@ -29,3 +29,32 @@
 
 在步骤1.中, 如何快速的构建一个CMake的工程呢? VSCode提供了非常好的体验:  
 [Get started with CMake Tools on Linux](https://code.visualstudio.com/docs/cpp/cmake-linux)
+
+
+
+周报:  
+* [**WebRTC**] Camera 连接TURN Server报403的问题, 后续没有复现, 待复现
+* [**WebRTC**] Camera 收到手机的Candidate信息后无法正常链接到手机, 连接超时错误
+* [**App**] 尝试集成一些多媒体库到App当中, 为后续集成第三方C++库做准备
+* [**Document**] 新增文档:
+  * China R&D / Wyze Beijing Android Team / WebRTC
+    * [AWS WebRTC SDK Web Demo](https://wyzelabs.atlassian.net/wiki/spaces/CRD/pages/637470153/AWS+WebRTC+SDK+Web+Demo)
+    * [AWS WebRTC SDK Android Demo](https://wyzelabs.atlassian.net/wiki/spaces/CRD/pages/637535726/AWS+WebRTC+SDK+Android+Demo)
+  * China R&D / Wyze Beijing Android Team / Android Native
+    * [FFmpeg in Android](https://wyzelabs.atlassian.net/wiki/spaces/CRD/pages/645137005/FFmpeg+in+Android)
+    * [X264 in Android](https://wyzelabs.atlassian.net/wiki/spaces/CRD/pages/644481652/X264+in+Android)
+    * [OpenSSL in Android](https://wyzelabs.atlassian.net/wiki/spaces/CRD/pages/644481659/OpenSSL+in+Android)
+
+
+
+[WebRTC] Camera 连接TURN Server报403的问题, 后续没有复现, 待复现
+[WebRTC] Camera 收到手机的Candidate信息后无法正常链接到手机, 连接超时错误
+[App] 尝试集成一些多媒体库到App当中, 为后续集成第三方C++库做准备
+[Document] 新增文档:
+  China R&D / Wyze Beijing Android Team / WebRTC
+    AWS WebRTC SDK Web Demo
+    AWS WebRTC SDK Android Demo
+  China R&D / Wyze Beijing Android Team / Android Native
+    FFmpeg in Android
+    X264 in Android
+    OpenSSL in Android

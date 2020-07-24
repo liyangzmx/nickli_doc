@@ -164,3 +164,53 @@ target_link_libraries( # Specifies the target library.
     ${log-lib}
 )
 ```
+
+
+检查并调整build.gradle(app):
+```
+android {
+    ...
+    defaultConfig {
+        ...
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+        ndk {
+            abiFilters 'arm64-v8a'
+        }
+    }
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs/']
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.10.2"
+        }
+    }
+}
+...
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    ...
+}
+```
+
+检查**System.loadLibrary**():
+```
+static {
+        System.loadLibrary("avutil");
+        System.loadLibrary("swresample");
+        System.loadLibrary("avformat");
+        System.loadLibrary("avcodec");
+        System.loadLibrary("swscale");
+        System.loadLibrary("avfilter");
+        System.loadLibrary("avresample");
+        System.loadLibrary("avdevice");
+}
+```
+**注意:** 特别注意上述库的**加载顺序!!!**

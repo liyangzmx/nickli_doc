@@ -131,4 +131,4 @@ java.lang.UnsatisfiedLinkError: dlopen failed: cannot locate symbol "fread_unloc
         at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:438)
         at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:807)
 ```
-**暂时无解**
+**注意ABI的版本不要太高!!!**
