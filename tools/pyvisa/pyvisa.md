@@ -103,6 +103,9 @@ ValueError: Please install PyUSB to use this resource type.
 No module named usb
 ```
 
+参考:[PyVISA - AttributeError: 'NIVisaLibrary' object has no attribute 'viParseRsrcEx'
+](https://stackoverflow.com/questions/51520737/pyvisa-attributeerror-nivisalibrary-object-has-no-attribute-viparsersrcex)
+
 试图修改后端:
 ```
 import pyvisa
