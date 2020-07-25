@@ -159,3 +159,23 @@ KEYSIGHT TECHNOLOGIES,MSO-X 3024T,MY58262577,07.20.2017102614
 ```
 
 对于示波器所有适用的**SCPI**指令可以参考Keysight提供的参考资料, 另外: Keysight还提供了一个关于SCPI的学习页面: [SCPI Learning Page](https://www.keysight.com/main/editorial.jspx?cc=CN&lc=chi&ckey=1688330&id=1688330) 
+
+再附一个电脑通过USB截图示波器显示的例子:
+```
+import pyvisa
+
+rm = pyvisa.ResourceManager('@py')
+print(rm.list_resources())
+# keysight = rm.open_resource("USB7::0x2a8d::0x1776::MY58262577")
+keysight = rm.open_resource("USB0::10893::6006::MY58262577::0::INSTR")
+print(keysight.query('*IDN?'))
+keysight.write(":DISPlay:DATA? PNG, COLor")
+keysight
+bmpdata = keysight.read_raw()[1+9:]
+keysight.close()
+with open( "out.png", "wb") as f:
+    f.write( bmpdata )
+```
+
+输出的截图会保存在执行脚本的当前目录下, 名字为**out.png**的文件中, 特别注意在仪表返回的数据中, 认为的跳过了**10**个字节, 截取到的图片如下:
+![out.png](out.png)
