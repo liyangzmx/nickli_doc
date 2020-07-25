@@ -148,3 +148,11 @@ print(rm.list_resources())
 keysight = rm.open_resource("USB0::10893::6006::MY58262577::0::INSTR")
 print(keysight.query('*IDN?'))
 ```
+
+此时示波器返回命令的响应:
+```
+(u'USB0::10893::6006::MY58262577::0::INSTR',)
+KEYSIGHT TECHNOLOGIES,MSO-X 3024T,MY58262577,07.20.2017102614
+```
+
+对于示波器所有适用的**SCPI**指令可以参考Keysight提供的参考资料, 另外: Keysight还提供了一个关于SCPI的学习页面: [SCPI Learning Page](https://www.keysight.com/main/editorial.jspx?cc=CN&lc=chi&ckey=1688330&id=1688330) 
