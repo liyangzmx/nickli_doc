@@ -25,6 +25,7 @@
 * [ENV - Install Ubuntu](linux/setup.md)
 * [C - C内联汇编(ARM)](linux/arm_asm.md)
 * [Ksymoops(编译报错)](linux/ksymoops.md)
+* [openssl - HMAC](linux/openssl_hmac.md)
 ---
 
 ## Tools
