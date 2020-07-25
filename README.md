@@ -21,9 +21,10 @@
 
 ---
 
-## Embedded
-* [ENV - Install Ubuntu](emb/setup.md)
-* [C - C内联汇编(ARM)](emb/arm_asm.md)
+## Linux
+* [ENV - Install Ubuntu](linux/setup.md)
+* [C - C内联汇编(ARM)](linux/arm_asm.md)
+* [Ksymoops(编译报错)](linux/ksymoops.md)
 ---
 
 ## Tools
