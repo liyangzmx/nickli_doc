@@ -32,6 +32,7 @@
 * [CMake - VSCode+CMake构建基本的cpp应用](tools/plantuml/cmake/cmake_vscode.md)
 * [PlantUML - VSCode+PlantUML插件绘制软件时序图](tools/plantuml/plantuml.md)
 * [Graphviz - 状态图](tools/graphviz/graphviz.md)
+* [PyVISA 控制 Keysight InfiniiVision 3000 系列示波器(@py)](tools/pyvisa/pyvisa.md)
 
 ---
 
