@@ -9,6 +9,9 @@
 |TURN|Traversal Using Relays around NAT|[https://tools.ietf.org/html/rfc5766](https://tools.ietf.org/html/rfc5766)|
 |RTP/RTCP|Real-Time Transport Protocol|[https://tools.ietf.org/html/rfc3550](https://tools.ietf.org/html/rfc3550)|
 |SRTP|The Secure Real-time Transport Protocol|[https://tools.ietf.org/html/rfc3711](https://tools.ietf.org/html/rfc3711)|
+|HMAC|Keyed-Hashing for Message Authentication|https://tools.ietf.org/html/rfc2104|
+|TLS|The TLS Protocol|https://tools.ietf.org/html/rfc2246|
+|DTLS|Datagram Transport Layer Security|https://tools.ietf.org/html/rfc4347|
 
 ## 自行编译安装
 ### 安装deptools

@@ -147,6 +147,9 @@ set_target_properties(
         PROPERTIES IMPORTED_LOCATION
         ${CMAKE_CURRENT_LIST_DIR}/../../../libs/${ANDROID_ABI}/libswscale.so
 )
+
+target_include_directories( ${CMAKE_CURRENT_LIST_DIR}/include/)
+
 target_link_libraries( # Specifies the target library.
     native-lib
     avutil
