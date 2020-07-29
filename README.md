@@ -36,6 +36,7 @@
 * [PlantUML - VSCode+PlantUML插件绘制软件时序图](tools/plantuml/plantuml.md)
 * [Graphviz - 状态图](tools/graphviz/graphviz.md)
 * [PyVISA 控制 Keysight InfiniiVision 3000 系列示波器(@py)](tools/pyvisa/pyvisa.md)
+* [Jenkins - DingTalk](tools.tools/jenkins/jenkins_dingtalk.md)
 
 ---
 
