@@ -19,10 +19,12 @@ implementation 'com.google.android.exoplayer:exoplayer:2.11.7'
 android {
     ... ...
     compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 ```
+以上部分参考自: [使用 Java 8 语言功能](https://developer.android.com/studio/write/java8-support)
 
 新建一个AndroidStudio项目, 在布局文件**activity_main.xml**中添加**PlayerView**:
 ```

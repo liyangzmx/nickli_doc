@@ -9,7 +9,7 @@
 * [Pixel XL的驱动程序二进制文件](android/ROM/pixel_drivers.md)
 
 ### Libs
-* [JNI - 数据转换](android/jni/data_convert.md)
+* [JNI - 数据类型转换笔记](android/jni/data_convert.md)
 * [Libs - libopenssl](android/libs/libopenssl_android.md)
 * [Libs - libevent](android/libs/libevent_android.md)
 * [Libs - libcurl](android/libs/libcurl_android.md)
@@ -20,7 +20,7 @@
 * [RTMP - RTMP+Nginx搭建](multimedia/rtmp/nginx_rtmp.md)
 * [RTMP - RTMPDump in Android(无OpenSSL)](multimedia/rtmp/librtmp_android.md)
 * [ExoPlayer - Hello World](multimedia/exoplayer/exoplayer.md)
-
+* [ExoPlayer - 扩展解码器](multimedia/exoplayer/exoplayer_ffmpeg.md)
 ---
 
 ## Linux

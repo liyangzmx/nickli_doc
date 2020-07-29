@@ -1,5 +1,16 @@
 # 数据转换
 
+## 官方参考
+Android:  
+    [JNI 提示](https://developer.android.com/training/articles/perf-jni)  
+    [使用 Memory Profiler 查看 Java 堆和内存分配](https://developer.android.com/studio/profile/memory-profiler#jni-references)
+    [JNI Local Reference Changes in ICS](https://android-developers.googleblog.com/2011/11/jni-local-reference-changes-in-ics.html)
+
+
+Oracle:  
+[Java 原生接口规范](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
+
+
 ## String -> jstring -> char *
 直接使用`JNIEnv`的`GetStringUTFChars()`方法即可, 用完了记得`ReleaseStringUTFChars()`释放.
 
@@ -63,3 +74,11 @@ typedef struct ANativeWindow_Buffer {
 } ANativeWindow_Buffer;
 ```
 其中bits是buffer的指针, 可以用来memcpy数据到这里, stride是每行对齐后的长度, 所以它一定是大于等于width的.
+
+
+
+
+## ByteBuffer -> const uint8_t* const 
+使用`JNIEnv`的`GetDirectBufferAddress()`方法得到指针, 然后用`reinterpret_cast<const uint8_t*>(<指针>)`进行转换, 可得到`const uint8_t* const buffer`
+
+
