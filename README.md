@@ -16,7 +16,6 @@
 ### Native
 * [基本数据类型转换笔记](android/jni/data_convert.md)
 * [OpenGL GLShader & GLProgram](android/jni/opengl_native_api.md)
-* [ACamera]()
 
 ### Multimedia
 * [WebRTC - Google SDK简介](multimedia/webrtc/Google_WebRTC_SDK.md)
