@@ -9,6 +9,7 @@
 * [Pixel XL的驱动程序二进制文件](android/ROM/pixel_drivers.md)
 
 ### Libs
+* [JNI - 学习笔记](android/jni/jni_info.md)
 * [Libs - libopenssl](android/libs/libopenssl_android.md)
 * [Libs - libevent](android/libs/libevent_android.md)
 * [Libs - libcurl](android/libs/libcurl_android.md)
