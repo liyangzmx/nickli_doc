@@ -4,19 +4,15 @@
 # 目录
 ## Android
 
-### ROM
-* [AOSP Build](android/rom/../ROM/tutorial.md)
-* [Pixel XL的驱动程序二进制文件](android/ROM/pixel_drivers.md)
+### Native
+* [JNI - 学习笔记](android/jni/jni_info.md)
+* [Java - 调用类的私有方法](android/java/java_reflection.md)
+* [OpenGL GLShader & GLProgram](android/jni/opengl_native_api.md)
 
 ### Libs
-* [JNI - 学习笔记](android/jni/jni_info.md)
 * [Libs - libopenssl](android/libs/libopenssl_android.md)
 * [Libs - libevent](android/libs/libevent_android.md)
 * [Libs - libcurl](android/libs/libcurl_android.md)
-
-### Native
-* [基本数据类型转换笔记](android/jni/data_convert.md)
-* [OpenGL GLShader & GLProgram](android/jni/opengl_native_api.md)
 
 ### Multimedia
 * [WebRTC - Google SDK简介](multimedia/webrtc/Google_WebRTC_SDK.md)
@@ -27,8 +23,12 @@
 * [ExoPlayer - Hello World](multimedia/exoplayer/exoplayer.md)
 * [ExoPlayer - 扩展解码器](multimedia/exoplayer/exoplayer_ffmpeg.md)
 * [Camera - Preview with Java](multimedia/android/camera2.md)
-* [Camera - Android Camera with NDK](android/jni/camera_ndk_api.md)
+* [Camera - Preview with NDK](android/jni/camera_ndk_api.md)
 ---
+
+### ROM
+* [AOSP Build](android/rom/../ROM/tutorial.md)
+* [Pixel XL的驱动程序二进制文件](android/ROM/pixel_drivers.md)
 
 ## Linux
 * [ENV - Install Ubuntu](linux/setup.md)

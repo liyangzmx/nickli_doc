@@ -2,6 +2,10 @@
 
 ## 官方参考
 Android:  
+    [Android NDK](https://developer.android.com/ndk)
+    [向您的项目添加 C 和 C++ 代码](https://developer.android.com/studio/projects/add-native-code.html)  
+    [Configure NDK Path](https://github.com/android/ndk-samples/wiki/Configure-NDK-Path)  
+    [CMake](https://developer.android.com/ndk/guides/cmake.html)  
     [JNI 提示](https://developer.android.com/training/articles/perf-jni)  
     [使用 Memory Profiler 查看 Java 堆和内存分配](https://developer.android.com/studio/profile/memory-profiler#jni-references)
     [JNI Local Reference Changes in ICS](https://android-developers.googleblog.com/2011/11/jni-local-reference-changes-in-ics.html)
@@ -10,7 +14,7 @@ Android:
 Oracle:  
 [Java 原生接口规范](http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/jniTOC.html)
 
-
+---
 ## String -> jstring -> char *
 直接使用`JNIEnv`的`GetStringUTFChars()`方法即可, 用完了记得`ReleaseStringUTFChars()`释放.
 
@@ -23,7 +27,25 @@ Oracle:
 ## char * -> jbyteArray -> byte[] -> String
 使用`JNIEnv`的`NewByteArray()`方法可以创建一个指定长度的`jbyteArray`, 但`jbyteArray`的数据需要通过`JNIEnv`的`SetByteArrayRegion()`方法进行设置.
 
+## ByteBuffer -> const uint8_t* const 
+使用`JNIEnv`的`GetDirectBufferAddress()`方法得到指针, 然后用`reinterpret_cast<const uint8_t*>(<指针>)`进行转换, 可得到`const uint8_t* const buffer`
 
+---
+## NewGlobalRef() & DeleteGlobalRef()
+二者必须配套使用, 类似:
+```
+// 对于jobject
+g_ctx.MainActivityObj = env->NewGlobalRef(thiz);
+env->DeleteGlobalRef(g_ctx.MainActivityObj);
+```
+但是对于`jclass`, `NewGlobalRef()`的写法会稍有区别:
+```
+jclass clz = env->GetObjectClass(thiz);
+g_ctx.MainActivityClz = reinterpret_cast<jclass >(env->NewGlobalRef(clz));
+env->DeleteGlobalRef(g_ctx.MainActivityClz);
+```
+
+---
 ## Surface
 ### Surface -> ANativeWindow
 `Surface`传递到JNI后会变成`jobject`, 获取ANativeWindow的方法:
@@ -74,11 +96,5 @@ typedef struct ANativeWindow_Buffer {
 } ANativeWindow_Buffer;
 ```
 其中bits是buffer的指针, 可以用来memcpy数据到这里, stride是每行对齐后的长度, 所以它一定是大于等于width的.
-
-
-
-
-## ByteBuffer -> const uint8_t* const 
-使用`JNIEnv`的`GetDirectBufferAddress()`方法得到指针, 然后用`reinterpret_cast<const uint8_t*>(<指针>)`进行转换, 可得到`const uint8_t* const buffer`
 
 
