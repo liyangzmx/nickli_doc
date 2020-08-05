@@ -26,6 +26,8 @@
 * [ExoPlayer - 扩展解码器](multimedia/exoplayer/exoplayer_ffmpeg.md)
 * [Camera - Preview with Java](multimedia/android/camera2.md)
 * [Camera - Preview with NDK](android/jni/camera_ndk_api.md)
+* [FFmpeg - libx264](multimedia/x264/x264_android.md)
+* [FFmpeg - libfdk-aac](multimedia/fdk-aac/fdk_aac.md)
 ---
 
 ### ROM
