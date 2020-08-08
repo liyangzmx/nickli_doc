@@ -28,6 +28,7 @@
 * [Camera - Preview with NDK](android/jni/camera_ndk_api.md)
 * [FFmpeg - libx264](multimedia/x264/x264_android.md)
 * [FFmpeg - libfdk-aac](multimedia/fdk-aac/fdk_aac.md)
+* [FFmpeg - ffmpeg_build.sh](multimedia/ffmpeg/ffmpeg_build.sh)
 ---
 
 ### ROM
