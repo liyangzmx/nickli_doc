@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # libuse
-USE_X264=1
-USE_FDK_AAC=1
+USE_X264=0
+USE_FDK_AAC=0
+USE_OPENSSL=0
 
 CLEAN_BEFORE=0
 
@@ -12,21 +13,29 @@ FFMPEG_NAME=ffmpeg-${FFMPEG_VERSION}
 # http://ffmpeg.org/releases/ffmpeg-4.3.1.tar.bz2
 FFMPEG_OFFICIAL_SITE=http://ffmpeg.org/releases
 FFMPEG_DOWNLOAD_URL=$FFMPEG_OFFICIAL_SITE/${FFMPEG_NAME}.tar.bz2
+DOWNLOAD_DIR=dl/
 
 download() {
     DOWNLOAD_URL=$1
+    if [ ! -d ${DOWNLOAD_DIR} ]; then
+        mkdir ${DOWNLOAD_DIR}
+    fi
+    pushd ${DOWNLOAD_DIR}
     proxychains wget ${DOWNLOAD_URL}
+    popd
 }
 
+echo "${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2"
+
 echo "FFmpeg Version: ${FFMPEG_VERSION}"
-if [ ! -f ${FFMPEG_NAME}.tar.bz2 ]; then
+if [ ! -f ${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2 ]; then
     echo "Downloading ${FFMPEG_NAME}"
-    download FFMPEG_DOWNLOAD_URL
+    download ${FFMPEG_DOWNLOAD_URL}
 fi
 
 if [ ! -d ${FFMPEG_NAME} ]; then
     echo "Uncopressing ${FFMPEG_NAME}.tar.gz ..."
-    tar xvf ${FFMPEG_NAME}.tar.bz2
+    tar xvf ${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2
 fi
 
 NDK=~/Android/Sdk/ndk/21.3.6528147
@@ -40,6 +49,10 @@ APP_ABI=arm64-v8a
 CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 PREFIX=${PWD}/android-build/
 
+if [ ! -d ${PREFIX} ]; then
+    mkdir ${PREFIX}
+fi
+
 echo "TOOLCHAINS: ${TOOLCHAINS}"
 echo "SYSROOT: ${SYSROOT}"
 echo "ARCH: ${ARCH}"
@@ -49,23 +62,26 @@ echo "API: ${API}"
 echo "Cleaning output..."
 if [ -d android-build ]; then
     rm -fr android-build
+    sync
+    mkdir android-build
 fi
 
 build_x264() 
 {
+    echo "Build X264 ..."
     # wget https://code.videolan.org/videolan/x264/-/archive/master/x264-master.tar.bz2
     X264_VERSION=master
     X264_NAME=x264-${X264_VERSION}
     X264_DOWNLOAD_URL=https://code.videolan.org/videolan/x264/-/archive/master/${X264_NAME}.tar.bz2
 
-    if [ ! -f ${X264_NAME}.tar.bz2 ]; then
+    if [ ! -f ${DOWNLOAD_DIR}${X264_NAME}.tar.bz2 ]; then
         echo "Downloading ${X264_NAME}.tar.bz2"
         download ${X264_DOWNLOAD_URL}
     fi
 
     if [ ! -d ${X264_NAME} ]; then
         echo "Uncopressing ${X264_NAME}.tar.bz2 ..."
-        tar xvf ${X264_NAME}.tar.bz2
+        tar xvf ${DOWNLOAD_DIR}${X264_NAME}.tar.bz2
     fi
 
     pushd ${X264_NAME}
@@ -96,19 +112,19 @@ build_x264()
 
 build_fdk_aac()
 {
-
+    echo "Build Tiny FDK-AAC ..."
     FDK_AAC_VERSION=2.0.1
     FDK_AAC_NAME=fdk-aac-${FDK_AAC_VERSION}
     FDK_AAC_DOWNLOAD_URL=https://downloads.sourceforge.net/opencore-amr/${FDK_AAC_NAME}.tar.gz
 
-    if [ ! -f ${FDK_AAC_NAME}.tar.gz ]; then
+    if [ ! -f ${DOWNLOAD_DIR}${FDK_AAC_NAME}.tar.gz ]; then
         echo "Downloading ${FDK_AAC_NAME}.tar.gz"
         download ${FDK_AAC_DOWNLOAD_URL}
     fi
 
     if [ ! -d ${FDK_AAC_NAME} ]; then
         echo "Uncopressing ${FDK_AAC_NAME}.tar.gz ..."
-        tar xvf ${FDK_AAC_NAME}.tar.gz
+        tar xvf ${DOWNLOAD_DIR}${FDK_AAC_NAME}.tar.gz
     fi
     
     pushd ${FDK_AAC_NAME}
@@ -117,14 +133,14 @@ build_fdk_aac()
         sed -i "N;120a#undef __ANDROID__" libSBRdec/src/lpp_tran.cpp
     fi
 
-    CC=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang \
-    CXX=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang++ \
-    AR=${TOOLCHAINS}/bin/${CROSS_PREFIX}-ar \
-    AS=${TOOLCHAINS}/bin/${CROSS_PREFIX}-as \
-    LD=${TOOLCHAINS}/bin/${CROSS_PREFIX}-ld \
-    NM=${TOOLCHAINS}/bin/${CROSS_PREFIX}-nm \
-    RANLIB=${TOOLCHAINS}/bin/${CROSS_PREFIX}-ranlib \
-    STRIP=${TOOLCHAINS}/bin/${CROSS_PREFIX}-strip \
+    CC=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang; \
+    CXX=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang++; \
+    AR=${TOOLCHAINS}/bin/${CROSS_PREFIX}-ar; \
+    AS=${TOOLCHAINS}/bin/${CROSS_PREFIX}-as; \
+    LD=${TOOLCHAINS}/bin/${CROSS_PREFIX}-ld; \
+    NM=${TOOLCHAINS}/bin/${CROSS_PREFIX}-nm; \
+    RANLIB=${TOOLCHAINS}/bin/${CROSS_PREFIX}-ranlib; \
+    STRIP=${TOOLCHAINS}/bin/${CROSS_PREFIX}-strip; \
     ./configure \
         --prefix=${PREFIX} \
         --enable-shared \
@@ -149,8 +165,43 @@ build_fdk_aac()
     popd
 }
 
+build_openssl()
+{
+    OPENSSL_VERSION=1.1.1g
+    OPENSSL_NAME=openssl-${OPENSSL_VERSION}
+    OPENSSL_DOWNLOAD_URL=https://www.openssl.org/source/${OPENSSL_NAME}.tar.gz
+
+    if [ ! -f ${DOWNLOAD_DIR}${OPENSSL_NAME}.tar.gz ]; then
+        echo "Downloading ${OPENSSL_NAME}.tar.gz"
+        download ${OPENSSL_DOWNLOAD_URL}
+    fi
+
+    if [ ! -d ${OPENSSL_NAME} ]; then
+        echo "Uncopressing ${OPENSSL_NAME}.tar.gz ..."
+        tar xvf ${DOWNLOAD_DIR}${OPENSSL_NAME}.tar.gz
+    fi
+
+    pushd ${OPENSSL_NAME}
+    
+    ANDROID_NDK_HOME=${NDK}; \
+    PATH=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:${PATH}; \
+    ./Configure android-arm64 -D__ANDROID_API__=23 no-tests shared --prefix=${PREFIX};\
+    echo "PATH: ${PATH}"
+
+    make -j8
+    # install
+    cp libssl.so.1.1 ${PREFIX}/libs/${APP_ABI}/libssl.so
+    cp libcrypto.so.1.1 ${PREFIX}/libs/${APP_ABI}/libcrypto.so
+    cp libssl.so.1.1 ${PREFIX}/libs/${APP_ABI}/libssl.so
+    cp libcrypto.so.1.1 ${PREFIX}/libs${APP_ABI}/libcrypto.so
+    cp -r include/* ${PREFIX}/include
+    # make install
+    popd
+}
+
 build_ffmpeg()
 {
+    echo "Build FFmpeg..."
     EXTRA_OPTIONS=
     if [ "X_${USE_X264}" == "X_1" ]; then
         EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-gpl"
@@ -163,17 +214,18 @@ build_ffmpeg()
         EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-libfdk-aac"
         build_fdk_aac
     fi
+
+    if [ "X_${USE_OPENSSL}" == "X_1" ]; then
+        EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-openssl"
+        build_openssl
+    fi
     # FFmpeg build
-    CONFIG_LOG_PATH=${PREFIX}/log
+    CONFIG_LOG_PATH=${PREFIX}/
     PWD=`pwd`
     EXTRA_CFLAGS="-D__ANDROID_API__=${API} -Os -fPIC -DANDROID -I${PREFIX}/include/"
-    EXTRA_LDFLAGS="-lc -lm -ldl -llog -L${PREFIX}/libs/$APP_ABI"
-    echo "EXTRA_OPTIONS: ${EXTRA_OPTIONS}"
-    echo "cc: ${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang"
-    echo "PREFIX: ${PREFIX}"
+    EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -lc -lm -ldl -llog -L${PREFIX}/libs/$APP_ABI"
 
     pushd ${FFMPEG_NAME}
-    mkdir -p ${CONFIG_LOG_PATH}
     ./configure \
         --cc=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang \
         --cxx=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang++ \
@@ -210,6 +262,82 @@ build_ffmpeg()
         --enable-decoder=vorbis \
         --enable-decoder=opus \
         --enable-decoder=flac \
+        --prefix=${PREFIX} \
+        --libdir=${PREFIX}/libs/$APP_ABI \
+        --incdir=${PREFIX}/include/ \
+        --cross-prefix=$CROSS_PREFIX \
+        --logfile=$CONFIG_LOG_PATH/config_$APP_ABI.log \
+        --arch=$ARCH \
+        --sysroot="${SYSROOT}" \
+        $EXTRA_OPTIONS \
+        --extra-cflags="$EXTRA_CFLAGS" \
+        --extra-ldflags="$EXTRA_LDFLAGS"
+
+    if [ $? != 0 ]; then
+        echo "ffmpeg configure error."
+        exit 0
+    fi
+    if [ "X_${CLEAN_BEFORE}" == "X_1" ]; then
+        make clean
+    fi
+    make -j${CORES}
+    make install
+    rm -r ${PREFIX}/libs/${APP_ABI}/pkgconfig
+    rm -r ${PREFIX}/share
+    popd
+}
+
+build_tiny_ffmpeg()
+{
+    echo "Build Tiny FFmpeg..."
+    EXTRA_OPTIONS=
+    if [ "X_${USE_X264}" == "X_1" ]; then
+        EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-gpl"
+        EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-libx264"
+        build_x264
+    fi
+
+    if [ "X_${USE_FDK_AAC}" == "X_1" ]; then
+        EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-nonfree"
+        EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-libfdk-aac"
+        build_fdk_aac
+    fi
+    # FFmpeg build
+    CONFIG_LOG_PATH=${PREFIX}/log
+    PWD=`pwd`
+    EXTRA_CFLAGS="-D__ANDROID_API__=${API} -Os -fPIC -DANDROID -I${PREFIX}/include/"
+    EXTRA_LDFLAGS="-lc -lm -ldl -llog -L${PREFIX}/libs/$APP_ABI"
+    echo "EXTRA_OPTIONS: ${EXTRA_OPTIONS}"
+    echo "cc: ${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang"
+    echo "PREFIX: ${PREFIX}"
+
+    pushd ${FFMPEG_NAME}
+    ./configure \
+        --cc=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang \
+        --cxx=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang++ \
+        --nm=${TOOLCHAINS}/bin/${CROSS_PREFIX}-nm \
+        --strip=${TOOLCHAINS}/bin/${CROSS_PREFIX}-strip \
+        --target-os=android \
+        --disable-static \
+        --enable-shared \
+        --enable-protocols \
+        --enable-cross-compile \
+        --enable-optimizations \
+        --enable-debug=3 \
+        --enable-small \
+        --disable-doc \
+        --disable-programs \
+        --disable-ffmpeg \
+        --disable-ffplay \
+        --disable-ffprobe \
+        --disable-symver \
+        --disable-network \
+        --disable-x86asm \
+        --disable-iconv \
+        --disable-asm \
+        --disable-filters \
+        --disable-avformat \
+        --disable-postproc \
         --logfile=$CONFIG_LOG_PATH/config_$APP_ABI.log \
         --prefix=${PREFIX} \
         --libdir=${PREFIX}/libs/$APP_ABI \
@@ -231,7 +359,6 @@ build_ffmpeg()
     make -j${CORES}
     make install
     rm -r ${PREFIX}/libs/${APP_ABI}/pkgconfig
-    rm -r ${PREFIX}/log
     rm -r ${PREFIX}/share
     popd
 }
