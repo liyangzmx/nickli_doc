@@ -49,8 +49,13 @@ APP_ABI=arm64-v8a
 CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
 PREFIX=${PWD}/android-build/
 
-if [ ! -d ${PREFIX} ]; then
+echo "Cleaning output..."
+if [ -d android-build ]; then
+    rm -fr ${PREFIX}
+    sync
     mkdir ${PREFIX}
+    mkdir -p ${PREFIX}/include
+    mkdir -p ${PREFIX}/libs/arm64-v8a
 fi
 
 echo "TOOLCHAINS: ${TOOLCHAINS}"
@@ -59,12 +64,6 @@ echo "ARCH: ${ARCH}"
 echo "APP_ABI: ${APP_ABI}"
 echo "API: ${API}"
 
-echo "Cleaning output..."
-if [ -d android-build ]; then
-    rm -fr android-build
-    sync
-    mkdir android-build
-fi
 
 build_x264() 
 {
@@ -223,7 +222,7 @@ build_ffmpeg()
     CONFIG_LOG_PATH=${PREFIX}/
     PWD=`pwd`
     EXTRA_CFLAGS="-D__ANDROID_API__=${API} -Os -fPIC -DANDROID -I${PREFIX}/include/"
-    EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -lc -lm -ldl -llog -L${PREFIX}/libs/$APP_ABI"
+    EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -lc -lm -ldl -llog -L${PREFIX}/libs/${APP_ABI}"
 
     pushd ${FFMPEG_NAME}
     ./configure \
@@ -263,10 +262,10 @@ build_ffmpeg()
         --enable-decoder=opus \
         --enable-decoder=flac \
         --prefix=${PREFIX} \
-        --libdir=${PREFIX}/libs/$APP_ABI \
+        --libdir=${PREFIX}/libs/${APP_ABI} \
         --incdir=${PREFIX}/include/ \
         --cross-prefix=$CROSS_PREFIX \
-        --logfile=$CONFIG_LOG_PATH/config_$APP_ABI.log \
+        --logfile=$CONFIG_LOG_PATH/config_${APP_ABI}.log \
         --arch=$ARCH \
         --sysroot="${SYSROOT}" \
         $EXTRA_OPTIONS \
@@ -306,7 +305,7 @@ build_tiny_ffmpeg()
     CONFIG_LOG_PATH=${PREFIX}/log
     PWD=`pwd`
     EXTRA_CFLAGS="-D__ANDROID_API__=${API} -Os -fPIC -DANDROID -I${PREFIX}/include/"
-    EXTRA_LDFLAGS="-lc -lm -ldl -llog -L${PREFIX}/libs/$APP_ABI"
+    EXTRA_LDFLAGS="-lc -lm -ldl -llog -L${PREFIX}/libs/${APP_ABI}"
     echo "EXTRA_OPTIONS: ${EXTRA_OPTIONS}"
     echo "cc: ${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang"
     echo "PREFIX: ${PREFIX}"
@@ -338,9 +337,9 @@ build_tiny_ffmpeg()
         --disable-filters \
         --disable-avformat \
         --disable-postproc \
-        --logfile=$CONFIG_LOG_PATH/config_$APP_ABI.log \
+        --logfile=$CONFIG_LOG_PATH/config_${APP_ABI}.log \
         --prefix=${PREFIX} \
-        --libdir=${PREFIX}/libs/$APP_ABI \
+        --libdir=${PREFIX}/libs/${APP_ABI} \
         --incdir=${PREFIX}/include/ \
         --cross-prefix=$CROSS_PREFIX \
         --arch=$ARCH \
@@ -363,4 +362,43 @@ build_tiny_ffmpeg()
     popd
 }
 
-build_ffmpeg
+# No openssl
+build_librtmp()
+{
+    # http://rtmpdump.mplayerhq.hu/download/rtmpdump-2.3.tgz
+    LIBRTMP_VERSION=2.3
+    LIBRTMP_NAME=rtmpdump-${LIBRTMP_VERSION}
+    LIBRTMP_URL=http://rtmpdump.mplayerhq.hu/download/${LIBRTMP_NAME}.tgz
+
+    if [ ! -f ${DOWNLOAD_DIR}${LIBRTMP_NAME}.tgz ]; then
+        echo "Downloading ${LIBRTMP_NAME}.tgz"
+        download ${LIBRTMP_URL}
+    fi
+
+    if [ ! -d ${LIBRTMP_NAME} ]; then
+        echo "Uncopressing ${LIBRTMP_NAME}.tgz ..."
+        tar xvf ${DOWNLOAD_DIR}${LIBRTMP_NAME}.tgz
+    fi
+
+    pushd ${LIBRTMP_NAME}
+    # sed -i "s|gcc|$\(API\)\-clang|g" Makefile
+    # sed -i "s|)ld|\)\-ld|g" Makefile
+
+    make \
+    PATH=$PATH:${TOOLCHAINS}/bin \
+    CC=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang \
+    LD=${TOOLCHAINS}/bin/${CROSS_PREFIX}-ld \
+    AR=${TOOLCHAINS}/bin/${CROSS_PREFIX}-ar \
+    XCFLAGS="-I${PREFIX}/include/ -isysroot ${TOOLCHAINS}/sysroot -isystem ${TOOLCHAINS}/sysroot/usr/include/${CROSS_PREFIX} -D__ANDROID_API__=${API}" \
+    XLDFLAGS="-L${PREFIX}/libs/${APP_ABI}" \
+    CRYPTO= \
+    THREADLIB_posix= -j${CORES}
+
+    cp librtmp/librtmp.so.0 ${PREFIX}/libs/${APP_ABI}/librtmp.so
+    mkdir -p ${PREFIX}/include/librtmp/
+    cp -rf librtmp/amf.h librtmp/http.h librtmp/log.h librtmp/rtmp.h ${PREFIX}/include/librtmp/
+
+    popd
+}
+
+build_librtmp
