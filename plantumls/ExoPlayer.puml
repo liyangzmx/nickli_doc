@@ -1,0 +1,588 @@
+@startuml ExoPlayer
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #OrangeRed
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+' participant AnalyticsCollector
+' participant DefaultBandwidthMeter
+
+' participant DefaultDataSourceFactory
+' participant DefaultExtractorsFactory
+
+box DataSource
+participant DefaultDataSource
+participant StatsDataSource
+participant FileDataSource
+end box
+
+box Extractor
+participant IcyDataSource
+participant DefaultExtractorInput
+participant Sniffer
+participant Mp4Extractor
+participant Mp4Track
+end box
+
+box Loader
+participant ExtractorHolder
+participant ExtractingLoadable
+participant LoadTask
+participant Loader
+end box
+
+box SampleQueue
+participant SampleDataQueue
+participant SampleQueue
+end box
+
+box MediaPeriod
+participant ProgressiveMediaPeriod
+participant SampleStreamImpl
+participant "[MediaSource]\n[BaseMediaSource]\nProgressiveMediaSource" as ProgressiveMediaSource
+participant MediaPeriodHolder
+participant MediaPeriodQueue
+end box
+
+participant APP
+
+box ExoPlayerImpl
+' participant DefaultTrackSelector
+' participant DefaultLoadControl
+participant ExoPlayerImplInternal
+participant Handler
+participant ExoPlayerImpl
+participant SimpleExoPlayer
+' participant DefaultMediaClock
+end box
+
+participant PlayerMessage
+
+box MediaCodecVideoRender
+participant MediaCodecVideoRender
+' participant DefaultRenderersFactory
+participant MediaCodec
+end box
+
+box View
+participant ComponentListener
+participant PlayerControlView
+participant PlayerView
+end box
+
+activate APP #LightBlue
+create PlayerView
+APP-->PlayerView:new
+group new PlayerView
+activate PlayerView #LightBlue
+create PlayerControlView
+PlayerView-->PlayerControlView:new
+create ComponentListener
+PlayerControlView-->ComponentListener:new
+ComponentListener-->o PlayerControlView:componentListener
+PlayerControlView-->o PlayerView: controller
+deactivate PlayerView
+end group
+
+create ProgressiveMediaSource
+APP-->ProgressiveMediaSource:new
+
+group new SimpleExoPlayer
+create SimpleExoPlayer
+APP-->SimpleExoPlayer:new
+activate SimpleExoPlayer #LightBlue
+' SimpleExoPlayer->DefaultRenderersFactory:createRenderers()
+' DefaultRenderersFactory-->MediaCodecVideoRender:RET
+
+create MediaCodecVideoRender
+SimpleExoPlayer-->MediaCodecVideoRender:new
+note left:BY **DefaultRenderersFactory.createRenderers()**
+MediaCodecVideoRender-->o SimpleExoPlayer:renderers[]
+create ExoPlayerImpl
+SimpleExoPlayer-->ExoPlayerImpl:new
+deactivate SimpleExoPlayer
+activate ExoPlayerImpl #LightBlue
+MediaCodecVideoRender-->o ExoPlayerImpl:renderers
+' DefaultTrackSelector-->o ExoPlayerImpl:trackSelector
+create ExoPlayerImplInternal
+ExoPlayerImpl-->ExoPlayerImplInternal:new
+activate ExoPlayerImplInternal #LightBlue
+' DefaultLoadControl-->o ExoPlayerImplInternal:loadControl
+' MediaCodecVideoRender-->o ExoPlayerImplInternal:renderers
+' DefaultTrackSelector-->o ExoPlayerImplInternal:trackSelector
+
+create MediaPeriodQueue
+ExoPlayerImplInternal-->MediaPeriodQueue:new
+create MediaPeriodHolder
+MediaPeriodQueue-->MediaPeriodHolder:new
+activate MediaPeriodHolder #LightBlue
+MediaPeriodHolder->MediaPeriodHolder:createMediaPeriod()
+activate MediaPeriodHolder #LightBlue
+MediaPeriodHolder->ProgressiveMediaSource:createPeriod()
+activate ProgressiveMediaSource #LightBlue
+create Mp4Extractor
+ProgressiveMediaSource-->Mp4Extractor:new
+deactivate MediaPeriodHolder
+deactivate MediaPeriodHolder
+
+activate Mp4Extractor #LightBlue
+' ProgressiveMediaSource->DefaultDataSourceFactory:createDataSource()
+' DefaultDataSourceFactory-->DefaultDataSource:new
+create DefaultDataSource
+ProgressiveMediaSource-->DefaultDataSource:new
+note right:BY **DefaultDataSourceFactory**
+activate DefaultDataSource #LightBlue
+create ProgressiveMediaPeriod
+ProgressiveMediaSource-->ProgressiveMediaPeriod:new
+deactivate ProgressiveMediaSource
+activate ProgressiveMediaPeriod #LightBlue
+DefaultDataSource-->o ProgressiveMediaPeriod:dataSource
+deactivate DefaultDataSource
+create Loader
+ProgressiveMediaPeriod-->Loader:new
+activate Loader #LightBlue
+Loader-->o ProgressiveMediaPeriod:loader
+deactivate Loader
+create ExtractorHolder
+ProgressiveMediaPeriod-->ExtractorHolder:new
+activate ExtractorHolder #LightBlue
+Mp4Extractor-->o ExtractorHolder:extractors[]
+deactivate Mp4Extractor
+
+ExtractorHolder-->o ProgressiveMediaPeriod:extractorHolder
+deactivate ExtractorHolder
+ProgressiveMediaPeriod-->o MediaPeriodHolder:mediaPeriod
+deactivate ProgressiveMediaPeriod
+MediaPeriodHolder-->ExoPlayerImplInternal
+
+' create DefaultMediaClock
+' ExoPlayerImplInternal--> DefaultMediaClock:new
+' DefaultMediaClock-->o ExoPlayerImplInternal:mediaClock
+
+ExoPlayerImplInternal-->o ExoPlayerImpl:internalPlayer
+deactivate ExoPlayerImplInternal
+ExoPlayerImpl-->o SimpleExoPlayer:player
+deactivate ExoPlayerImpl
+
+end group
+
+APP->PlayerView:setPlayer()
+group setPlayer()
+activate PlayerView #LightBlue
+SimpleExoPlayer-->o PlayerView:player
+PlayerView->PlayerControlView:setPlayer()
+activate PlayerControlView #LightBlue
+SimpleExoPlayer-->o PlayerControlView:player
+PlayerControlView->SimpleExoPlayer:addListener()
+deactivate PlayerControlView
+activate SimpleExoPlayer #LightBlue
+SimpleExoPlayer->ExoPlayerImpl:addListener()
+deactivate SimpleExoPlayer
+activate ExoPlayerImpl #LightBlue
+ComponentListener-->o ExoPlayerImpl:listeners.addIfAbsent()
+deactivate ExoPlayerImpl
+PlayerView->SimpleExoPlayer:setVideoSurfaceView()
+note left:SimpleExoPlayer is a VideoComponent
+deactivate PlayerView
+activate SimpleExoPlayer #LightBlue
+SimpleExoPlayer->SimpleExoPlayer:setVideoSurfaceHolder()
+activate SimpleExoPlayer
+SimpleExoPlayer->SimpleExoPlayer:setVideoSurfaceInternal()
+SimpleExoPlayer->ExoPlayerImpl:PlayerMessage()
+deactivate SimpleExoPlayer
+deactivate SimpleExoPlayer
+activate ExoPlayerImpl #LightBlue
+create PlayerMessage
+ExoPlayerImpl-->PlayerMessage:new
+activate PlayerMessage #LightBlue
+ExoPlayerImplInternal-->o PlayerMessage:sender
+MediaCodecVideoRender-->o PlayerMessage:target
+ExoPlayerImpl->PlayerMessage:setType()
+ExoPlayerImpl->PlayerMessage:setPayload()
+ExoPlayerImpl->PlayerMessage:send()
+deactivate ExoPlayerImpl
+activate PlayerMessage #LightBlue
+PlayerMessage->ExoPlayerImplInternal:sendMessage()
+deactivate PlayerMessage
+deactivate PlayerMessage
+activate ExoPlayerImplInternal #LightBlue
+ExoPlayerImplInternal->ExoPlayerImplInternal:sendMessageInternal()
+note left:**MSG_SEND_MESSAGE**
+activate ExoPlayerImplInternal #LightBlue
+PlayerMessage-->o ExoPlayerImplInternal:pendingMessages.add()
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+end group
+
+group new ProgressiveMediaPeriod
+
+' create ProgressiveMediaPeriod
+APP-->ProgressiveMediaSource:new
+' DefaultDataSourceFactory-->o ProgressiveMediaSource:dataSourceFactory
+' DefaultExtractorsFactory-->o ProgressiveMediaSource:extractorsFactory
+end group
+
+group prepare()
+APP->SimpleExoPlayer:prepare()
+deactivate APP
+activate SimpleExoPlayer #LightBlue
+ProgressiveMediaSource-->o SimpleExoPlayer:mediaSource
+SimpleExoPlayer->ExoPlayerImpl:prepare()
+deactivate SimpleExoPlayer
+activate ExoPlayerImpl #LightBlue
+ProgressiveMediaSource-->o ExoPlayerImpl:mediaSource
+ExoPlayerImpl->ExoPlayerImplInternal:prepare()
+deactivate ExoPlayerImpl
+activate ExoPlayerImplInternal #LightBlue
+ExoPlayerImplInternal-> ExoPlayerImplInternal:prepareInternal()
+note left:**MSG_PREPARE**
+activate ExoPlayerImplInternal #LightBlue
+ProgressiveMediaSource-->o ExoPlayerImplInternal:mediaSource
+ExoPlayerImplInternal->ProgressiveMediaSource:prepareSource()
+deactivate ExoPlayerImplInternal
+activate ProgressiveMediaSource #LightBlue
+ProgressiveMediaSource->ProgressiveMediaSource:prepareSourceInternal()
+deactivate ProgressiveMediaSource
+
+create Handler
+ExoPlayerImplInternal->Handler:post()
+note right:**MSG_DO_SOME_WORK**
+deactivate ExoPlayerImplInternal
+activate Handler #LightGreen
+
+Handler->ExoPlayerImplInternal:deliverMessage()
+deactivate Handler
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->ExoPlayerImplInternal:handleMessage()
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->ExoPlayerImplInternal:doSomeWork()
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->ExoPlayerImplInternal:updatePeriods()
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->ExoPlayerImplInternal:maybeUpdateLoadingPeriod()
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->ProgressiveMediaPeriod:prepare()
+activate ProgressiveMediaPeriod #LightGreen
+ExoPlayerImplInternal-->o ProgressiveMediaPeriod:callback
+ProgressiveMediaPeriod->ProgressiveMediaPeriod:startLoading()
+activate ProgressiveMediaPeriod #LightGreen
+ProgressiveMediaPeriod->Loader:startLoading()
+activate Loader #LightGreen
+create LoadTask
+Loader-->LoadTask:new
+deactivate Loader
+activate LoadTask #LightGreen
+ProgressiveMediaPeriod-->o LoadTask:callback
+
+create ExtractingLoadable
+ProgressiveMediaPeriod-->ExtractingLoadable:new
+activate ExtractingLoadable #LightGreen
+ProgressiveMediaPeriod-->o ExtractingLoadable:extractorOutput
+deactivate ProgressiveMediaPeriod
+deactivate ProgressiveMediaPeriod
+end group
+
+create StatsDataSource
+ExtractingLoadable-->StatsDataSource:new
+activate StatsDataSource #LightGreen
+DefaultDataSource-->o StatsDataSource:dataSource
+StatsDataSource-->o ExtractingLoadable:dataSource
+deactivate StatsDataSource
+ExtractingLoadable-->ExoPlayerImplInternal
+deactivate ExtractingLoadable
+
+ExoPlayerImplInternal->MediaPeriodQueue:enqueueNextMediaPeriodHolder()
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+
+
+LoadTask->LoadTask:run()
+activate LoadTask #Yellow
+LoadTask->ExtractingLoadable:load()
+deactivate LoadTask
+deactivate LoadTask
+
+group open DataSource
+activate ExtractingLoadable #Yellow
+ExtractingLoadable->StatsDataSource:open()
+activate StatsDataSource #Yellow
+StatsDataSource->DefaultDataSource:open()
+deactivate StatsDataSource
+activate DefaultDataSource #Yellow
+DefaultDataSource->DefaultDataSource:getFileDataSource()
+activate DefaultDataSource #Yellow
+create FileDataSource
+DefaultDataSource-->FileDataSource:new
+FileDataSource-->o DefaultDataSource:dataSource
+deactivate DefaultDataSource
+deactivate DefaultDataSource
+
+create IcyDataSource
+ExtractingLoadable-->IcyDataSource:new
+activate IcyDataSource #Yellow
+DefaultDataSource-->o IcyDataSource:dataSource
+deactivate IcyDataSource
+create DefaultExtractorInput
+ExtractingLoadable-->DefaultExtractorInput:new
+activate DefaultExtractorInput #Yellow
+IcyDataSource-->o DefaultExtractorInput:dataSource
+deactivate DefaultExtractorInput
+
+ExtractingLoadable->ExtractorHolder:selectExtractor()
+activate ExtractorHolder #Yellow
+ExtractorHolder->Mp4Extractor:sniff()
+activate Mp4Extractor #Yellow
+
+create Sniffer
+Mp4Extractor->Sniffer:sniffUnfragmented()
+deactivate Mp4Extractor
+activate Sniffer #Yellow
+Sniffer->Sniffer:sniffInternal()
+Sniffer->DefaultExtractorInput:peekFully()
+deactivate Sniffer #Yellow
+ExtractorHolder->Mp4Extractor:init()
+deactivate ExtractorHolder
+activate Mp4Extractor #Yellow
+end group
+ProgressiveMediaPeriod-->o Mp4Extractor:extractorOutput
+deactivate Mp4Extractor
+
+ExtractingLoadable->Mp4Extractor:read()
+deactivate ExtractingLoadable
+activate Mp4Extractor #Yellow
+
+group new Track
+Mp4Extractor->Mp4Extractor:readAtomHeader()
+activate Mp4Extractor #Yellow
+Mp4Extractor->Mp4Extractor:processAtomEnded()
+activate Mp4Extractor #Yellow
+Mp4Extractor->Mp4Extractor:processMoovAtom()
+activate Mp4Extractor #Yellow
+Mp4Extractor->ProgressiveMediaPeriod:track()
+activate ProgressiveMediaPeriod #Yellow
+ProgressiveMediaPeriod->ProgressiveMediaPeriod:prepareTrackOutput()
+activate ProgressiveMediaPeriod #Yellow
+
+create SampleQueue
+ProgressiveMediaPeriod-->SampleQueue:new
+deactivate ProgressiveMediaPeriod
+deactivate ProgressiveMediaPeriod
+activate SampleQueue #Yellow
+SampleQueue-->o ProgressiveMediaPeriod:sampleQueues.add()
+
+create SampleDataQueue
+SampleQueue-->SampleDataQueue:new
+activate SampleDataQueue #Yellow
+SampleDataQueue-->o SampleQueue: sampleDataQueue
+deactivate SampleDataQueue
+create Mp4Track
+Mp4Extractor-->Mp4Track:new
+activate Mp4Track #Yellow
+SampleQueue-->o Mp4Track:trackOutput
+deactivate SampleQueue
+Mp4Track-->o Mp4Extractor:tracks.add()
+deactivate Mp4Track
+
+Mp4Extractor->ProgressiveMediaPeriod:endTracks()
+deactivate Mp4Extractor
+deactivate Mp4Extractor
+deactivate Mp4Extractor
+activate ProgressiveMediaPeriod #Yellow
+ProgressiveMediaPeriod->ProgressiveMediaPeriod:maybeFinishPrepare()
+activate ProgressiveMediaPeriod #Yellow
+ProgressiveMediaPeriod->ExoPlayerImplInternal:onPrepared()
+deactivate ProgressiveMediaPeriod
+deactivate ProgressiveMediaPeriod
+activate ExoPlayerImplInternal #Yellow
+ExoPlayerImplInternal->ExoPlayerImplInternal:handlePeriodPrepared()
+activate ExoPlayerImplInternal #Yellow
+note left:**MSG_PERIOD_PREPARED**
+ExoPlayerImplInternal->MediaPeriodHolder:handlePrepared()
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+activate MediaPeriodHolder #Yellow
+MediaPeriodHolder->MediaPeriodHolder:selectTracks()
+activate MediaPeriodHolder #Yellow
+MediaPeriodHolder->ProgressiveMediaPeriod:selectTracks()
+deactivate MediaPeriodHolder
+deactivate MediaPeriodHolder
+activate ProgressiveMediaPeriod #Yellow
+activate ProgressiveMediaPeriod #Yellow
+create SampleStreamImpl
+ProgressiveMediaPeriod-->SampleStreamImpl:new
+deactivate ProgressiveMediaPeriod
+deactivate ProgressiveMediaPeriod
+SampleStreamImpl-->o ProgressiveMediaPeriod:streams.add()
+end group
+
+group read Sample
+Mp4Extractor->Mp4Extractor:sampleData()
+activate Mp4Extractor #Yellow
+Mp4Extractor->SampleQueue:sampleData()
+deactivate Mp4Extractor
+activate SampleQueue #Yellow
+SampleQueue->SampleDataQueue:sampleData()
+deactivate SampleQueue
+activate SampleDataQueue #Yellow
+SampleDataQueue->DefaultExtractorInput:read()
+deactivate SampleDataQueue
+
+Mp4Extractor->DefaultExtractorInput:readFully()
+deactivate Mp4Extractor
+activate DefaultExtractorInput #Yellow
+DefaultExtractorInput->DefaultExtractorInput:readFromDataSource()
+activate DefaultExtractorInput #Yellow
+DefaultExtractorInput->IcyDataSource:read()
+deactivate DefaultExtractorInput
+deactivate DefaultExtractorInput
+activate IcyDataSource #Yellow
+IcyDataSource->FileDataSource:read()
+deactivate IcyDataSource
+end group
+
+
+
+' ->ExoPlayerImplInternal:doSomeWork()
+note over ExoPlayerImplInternal:<color black>**doSomeWork()**</color>
+ExoPlayerImplInternal->MediaCodecVideoRender:render()
+activate MediaCodecVideoRender #LightGreen
+
+group INIT CODEC
+MediaCodecVideoRender->MediaCodecVideoRender:maybeInitCodec()
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->MediaCodecVideoRender:maybeInitCodecWithFallback()
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->MediaCodecVideoRender:initCodec()
+activate MediaCodecVideoRender #LightGreen
+create MediaCodec
+MediaCodecVideoRender->MediaCodec:createByCodecName()
+deactivate MediaCodecVideoRender
+deactivate MediaCodecVideoRender
+deactivate MediaCodecVideoRender
+activate MediaCodec #LightGreen
+MediaCodec-->MediaCodec:new
+activate MediaCodec #LightGreen
+deactivate MediaCodec
+deactivate MediaCodec
+end group
+
+
+group new MediaCodec
+ExoPlayerImplInternal->ExoPlayerImplInternal:updatePlaybackPositions()
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->ExoPlayerImplInternal:maybeTriggerPendingMessages()
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->ExoPlayerImplInternal:sendMessageToTarget()
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->ExoPlayerImplInternal:deliverMessage()
+activate ExoPlayerImplInternal #LightGreen
+ExoPlayerImplInternal->MediaCodecVideoRender:handleMessage()
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+deactivate ExoPlayerImplInternal
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->MediaCodecVideoRender:setSurface()
+note right:BY **MSG_SET_SURFACE**
+activate MediaCodecVideoRender #LightGreen
+deactivate MediaCodecVideoRender
+deactivate MediaCodecVideoRender
+end group
+
+group peek sampleData
+MediaCodecVideoRender->MediaCodecVideoRender:feedInputBuffer()
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->MediaCodecVideoRender:readSource()
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->SampleStreamImpl:readData()
+deactivate MediaCodecVideoRender
+deactivate MediaCodecVideoRender
+activate SampleStreamImpl #LightGreen
+SampleStreamImpl->ProgressiveMediaPeriod:readData()
+deactivate SampleStreamImpl
+activate ProgressiveMediaPeriod #LightGreen
+ProgressiveMediaPeriod->SampleQueue:read()
+deactivate ProgressiveMediaPeriod
+activate SampleQueue #LightGreen
+SampleQueue->SampleDataQueue:readToBuffer()
+deactivate SampleQueue
+activate SampleDataQueue #LightGreen
+SampleDataQueue->SampleDataQueue:readData()
+activate SampleDataQueue #LightGreen
+deactivate SampleDataQueue
+deactivate SampleDataQueue
+end group
+
+group DECODE
+MediaCodecVideoRender->MediaCodecVideoRender:getInputBuffer()
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->MediaCodec:getInputBuffer()
+deactivate MediaCodecVideoRender
+note over MediaCodecVideoRender: doSomeWork
+
+MediaCodecVideoRender->MediaCodecVideoRender:getOutputBuffer()
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->MediaCodec:getOutputBuffer()
+deactivate MediaCodecVideoRender
+end group
+
+group RENDERER
+MediaCodecVideoRender->MediaCodecVideoRender:drainOutputBuffer()
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->MediaCodecVideoRender:processOutputBuffer()
+activate MediaCodecVideoRender #LightGreen
+MediaCodecVideoRender->MediaCodecVideoRender:renderOutputBuffer()
+activate MediaCodecVideoRender #LightGreen
+deactivate MediaCodecVideoRender
+deactivate MediaCodecVideoRender
+deactivate MediaCodecVideoRender
+deactivate MediaCodecVideoRender
+end group
+
+@enduml

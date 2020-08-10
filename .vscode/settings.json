@@ -1,0 +1,5 @@
+{
+    "plantuml.commandArgs": [
+        "-DPLANTUML_LIMIT_SIZE=81920"
+    ],
+}
