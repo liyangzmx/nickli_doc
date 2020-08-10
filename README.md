@@ -28,6 +28,7 @@
 * [Camera - Preview with NDK](android/jni/camera_ndk_api.md)
 * [FFmpeg - libx264](multimedia/x264/x264_android.md)
 * [FFmpeg - libfdk-aac](multimedia/fdk-aac/fdk_aac.md)
+* [FFmpeg - ffmpeg_build.sh](multimedia/ffmpeg/ffmpeg_build.sh)
 ---
 
 ### ROM
@@ -48,6 +49,7 @@
 * [Graphviz - 状态图](tools/graphviz/graphviz.md)
 * [PyVISA 控制 Keysight InfiniiVision 3000 系列示波器(@py)](tools/pyvisa/pyvisa.md)
 * [Jenkins - DingTalk](tools.tools/jenkins/jenkins_dingtalk.md)
+* [CMake 与 pkg-config](tools/cmake/cmake_pkg-config.md)
 
 ---
 
