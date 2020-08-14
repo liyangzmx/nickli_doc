@@ -1,0 +1,345 @@
+@startuml MediaSession
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box BT
+' participant AvRcpTarget
+participant AvrcpNativeInterface
+participant AvrcpTargetService
+participant MediaPlayerWrapper
+participant MediaPlayerList
+' participant MediaSession
+participant BTCallback
+participant "MediaController" as BTMediaController
+participant "MediaControllerListener" as MediaControllerListener
+participant BrowsablePlayerConnector
+participant BrowsedPlayerWrapper
+participant MediaBrowser
+' participant MediaConnectionCallback
+participant ServiceCallbacks
+end box
+' participant MediaSessionManager
+
+box MediaSessionService
+participant MediaSessionStack
+participant FullUserRecord
+participant MediaSessionService
+participant "MediaSessionRecord" as MediaSessionRecord
+participant SessionStub
+participant SessionCb
+participant CallbackStub
+end box
+
+box PLAYER
+participant ServiceBinder
+participant TransportControls
+participant ISessionControllerCallbackHolder
+participant ControllerStub
+participant "MediaController" as PlayerMediaController
+participant "MediaSession" as PlayerMediaSession
+participant CallbackMessageHandler
+participant Callback
+participant "[IActiveSessionsListener]\nSessionsChangedWrapper" as SessionsChangedWrapper
+' participant TopTransportSessionListener
+' participant RemoteController
+' participant SessionsListenerRecord
+participant PendingIntent
+participant "[PLAYER]" as PLAYER
+end box
+
+->MediaSessionService:new
+activate MediaSessionService
+' MediaSessionService-->MessageHandler:new
+' MessageHandler-->o MediaSessionService:mHandler
+MediaSessionService-->o FullUserRecord:new
+activate FullUserRecord
+FullUserRecord-->o MediaSessionStack
+MediaSessionStack-->o FullUserRecord:mPriorityStack
+deactivate FullUserRecord
+FullUserRecord-->o MediaSessionService:mUserRecords
+deactivate MediaSessionService
+
+' TopTransportSessionListener-->o RemoteController:mSessionListener
+' ->RemoteController:startListeningToSessions()
+' RemoteController->MediaSessionManager:addOnActiveSessionsChangedListener()
+' activate MediaSessionManager
+' MediaSessionManager-->SessionsChangedWrapper:new
+' TopTransportSessionListener-->o SessionsChangedWrapper:mListener
+' MediaSessionManager->MediaSessionService:addSessionsListener()
+' activate MediaSessionService
+' MediaSessionService-->SessionsListenerRecord:new
+' TopTransportSessionListener-->o SessionsListenerRecord:mListener
+' SessionsListenerRecord-->o MediaSessionService:mSessionsListeners.add()
+' deactivate MediaSessionService
+' TopTransportSessionListener-->o MediaSessionManager:mListeners.put()
+' deactivate MediaSessionManager
+
+PLAYER-->PlayerMediaSession:new
+activate PlayerMediaSession
+PlayerMediaSession-->CallbackStub:new
+CallbackStub-->o PlayerMediaSession:mCbStub
+PlayerMediaSession->MediaSessionService:createSession()
+note left:BY **MediaSessionManager**
+activate MediaSessionService
+MediaSessionService->MediaSessionService:createSessionInternal()
+activate MediaSessionService
+MediaSessionService->MediaSessionService:createSessionLocked()
+activate MediaSessionService
+MediaSessionService->MediaSessionService:getFullUserRecordLocked()
+activate MediaSessionService
+MediaSessionService--> FullUserRecord:RET
+deactivate MediaSessionService
+MediaSessionService-->MediaSessionRecord:new
+MediaSessionRecord-->SessionCb:new
+CallbackStub-->o SessionCb:mCb
+SessionCb-->o MediaSessionRecord:mSessionCb
+MediaSessionRecord-->SessionStub:new
+SessionStub-->o MediaSessionRecord:mSession
+MediaSessionService->MediaSessionStack:addSession()
+deactivate MediaSessionService
+deactivate MediaSessionService
+MediaSessionService->MediaSessionRecord:getSessionBinder()
+deactivate MediaSessionService
+activate MediaSessionRecord
+MediaSessionRecord-->SessionStub:RET
+deactivate MediaSessionRecord
+MediaSessionRecord-->o MediaSessionStack:mSessions.add()
+' MediaSession-->Token:new
+' Token-->o MediaSession:mSessionToken
+PlayerMediaSession-->PlayerMediaController:new
+deactivate PlayerMediaSession
+activate PlayerMediaController
+PlayerMediaController-->TransportControls:new
+TransportControls-->o PlayerMediaController:mTransportControls
+PlayerMediaController-->o PlayerMediaSession:mController
+deactivate PlayerMediaController
+SessionStub-->o PlayerMediaSession:mBinder
+
+
+PLAYER->PlayerMediaSession:setCallback()
+activate PlayerMediaSession
+PlayerMediaSession-->CallbackMessageHandler:new
+Callback-->o CallbackMessageHandler:mCallback
+CallbackMessageHandler-->o PlayerMediaSession:mCallback
+deactivate PlayerMediaSession
+
+PLAYER->PlayerMediaSession:setPlaybackState()
+PlayerMediaSession->SessionStub:setPlaybackState()
+SessionStub->MediaSessionService:onSessionPlaystateChanged()
+activate MediaSessionService
+MediaSessionService->MediaSessionStack:onPlaystateChanged()
+activate MediaSessionStack
+MediaSessionStack->MediaSessionStack:updateMediaButtonSession()
+activate MediaSessionStack
+MediaSessionRecord-->o MediaSessionStack:mMediaButtonSession
+MediaSessionStack->FullUserRecord:onMediaButtonSessionChanged()
+deactivate MediaSessionStack
+deactivate MediaSessionStack
+' FullUserRecord->MessageHandler:postSessionsChanged()
+' MessageHandler->MediaSessionService:handleMessage()
+FullUserRecord->MediaSessionService:handleMessage()
+note right:**MSG_SESSIONS_CHANGED**
+activate MediaSessionService
+MediaSessionService->MediaSessionService:pushSessionsChanged()
+activate MediaSessionService
+deactivate MediaSessionService
+deactivate MediaSessionService
+deactivate MediaSessionService
+
+PLAYER->PlayerMediaSession:setMediaButtonReceiver()
+PlayerMediaSession->SessionStub:setMediaButtonReceiver()
+SessionStub->MediaSessionService:onMediaButtonReceiverChanged()
+MediaSessionService->FullUserRecord:rememberMediaButtonReceiverLocked()
+FullUserRecord->MediaSessionRecord:getMediaButtonReceiver()
+MediaSessionRecord-->PendingIntent:RET
+PendingIntent-->o MediaSessionRecord:mLastMediaButtonReceiver
+
+
+->AvrcpTargetService:start()
+activate AvrcpTargetService
+AvrcpTargetService-->MediaPlayerList:new
+activate MediaPlayerList
+MediaPlayerList->MediaSessionService:setCallback()
+BTCallback-->o FullUserRecord:mCallback
+MediaPlayerList-->o AvrcpTargetService:mMediaPlayerList
+deactivate MediaPlayerList
+AvrcpTargetService->MediaPlayerList:init()
+deactivate AvrcpTargetService
+activate MediaPlayerList
+MediaPlayerList-->BrowsablePlayerConnector:new
+activate BrowsablePlayerConnector
+BrowsablePlayerConnector-->o MediaPlayerList:mBrowsablePlayerConnector
+BrowsablePlayerConnector-->BrowsedPlayerWrapper:new
+activate BrowsedPlayerWrapper
+BrowsedPlayerWrapper-->MediaBrowser:new
+activate MediaBrowser
+MediaBrowser-->o BrowsedPlayerWrapper:mWrappedBrowser.mDelegate
+BrowsablePlayerConnector->BrowsedPlayerWrapper:connect()
+deactivate BrowsablePlayerConnector
+BrowsedPlayerWrapper->MediaBrowser:connect()
+MediaBrowser-[#Blue]->ServiceBinder:<color blue>**CONNECT()**</color>
+activate ServiceBinder
+ServiceBinder-[#Blue]->o MediaBrowser:<color blue>**mServiceBinder**</color>
+MediaBrowser-[#Blue]>ServiceBinder:connect()
+deactivate MediaBrowser
+ServiceBinder->PLAYER:onGetRoot()
+ServiceBinder-[#Blue]>ServiceCallbacks:onConnected()
+deactivate ServiceBinder
+activate ServiceCallbacks
+ServiceCallbacks->MediaBrowser:onServiceConnected()
+deactivate ServiceCallbacks
+activate MediaBrowser
+MediaBrowser-[#Blue]>ServiceBinder:addSubscription()
+deactivate MediaBrowser
+activate ServiceBinder
+ServiceBinder->PLAYER:addSubscription()
+deactivate ServiceBinder
+activate PLAYER
+PLAYER->PLAYER:performLoadChildren()
+activate PLAYER
+PLAYER->PLAYER:onLoadChildren()
+activate PLAYER
+deactivate PLAYER
+deactivate PLAYER
+deactivate PLAYER
+
+BrowsedPlayerWrapper->BrowsablePlayerConnector:handleMessage()
+deactivate BrowsedPlayerWrapper
+note right:MSG_CONNECT_CB
+activate BrowsablePlayerConnector
+BrowsablePlayerConnector->MediaSessionService:getActiveSessions()
+deactivate BrowsablePlayerConnector
+MediaSessionService-->PlayerMediaController:RET
+
+MediaPlayerList->MediaPlayerList:addMediaPlayer()
+activate MediaPlayerList
+MediaPlayerList-->MediaPlayerWrapper:new
+activate MediaPlayerWrapper
+MediaPlayerWrapper-->o MediaPlayerList:mMediaPlayers.put()
+MediaPlayerList-->BTMediaController:new
+deactivate MediaPlayerList
+deactivate MediaPlayerList
+activate BTMediaController
+BTMediaController-->TransportControls:new
+TransportControls-->o BTMediaController:mTransportControls
+BTMediaController->PlayerMediaController:getTransportControls()
+PlayerMediaController-->TransportControls:RET
+TransportControls-->o BTMediaController:mTransportDelegate
+PlayerMediaController-->o BTMediaController:mDelegate
+BTMediaController-->o MediaPlayerWrapper:mMediaController
+deactivate MediaPlayerWrapper
+deactivate BTMediaController
+
+
+
+
+PLAYER->PlayerMediaSession:setActive()
+PlayerMediaSession->SessionStub:updateSession()
+SessionStub->MediaSessionService:updateSession()
+MediaSessionService->FullUserRecord:pushAddressedPlayerChangedLocked()
+FullUserRecord->BTCallback:onAddressedPlayerChanged()
+' FullUserRecord->MediaPlayerList:onAddressedPlayerChanged()
+activate BTCallback
+BTCallback->MediaPlayerList:setActivePlayer()
+deactivate BTCallback
+activate MediaPlayerList
+MediaPlayerList->MediaPlayerWrapper:registerCallback()
+deactivate MediaPlayerList
+activate MediaPlayerWrapper
+MediaPlayerWrapper-->MediaControllerListener:new
+activate MediaControllerListener
+PlayerMediaController-->o MediaControllerListener:mController
+MediaControllerListener->PlayerMediaController:registerCallback()
+deactivate MediaControllerListener
+activate PlayerMediaController
+PlayerMediaController->PlayerMediaController:addCallbackLocked()
+activate PlayerMediaController
+PlayerMediaController->ControllerStub:registerCallback()
+deactivate PlayerMediaController
+deactivate PlayerMediaController
+activate ControllerStub
+ControllerStub-->ISessionControllerCallbackHolder:new
+CallbackStub-->o ISessionControllerCallbackHolder:mCallback
+ISessionControllerCallbackHolder-->o ControllerStub:mControllerCallbackHolders.add()
+deactivate ControllerStub
+MediaControllerListener-->o MediaPlayerWrapper:mControllerCallbacks
+deactivate MediaPlayerWrapper
+
+
+
+
+
+->AvrcpNativeInterface:sendMediaKeyEvent()
+AvrcpNativeInterface->AvrcpTargetService:sendMediaKeyEvent()
+AvrcpTargetService->MediaPlayerList:sendMediaKeyEvent()
+MediaPlayerList->MediaSessionService:dispatchMediaKeyEvent()
+note right:BY **MediaSessionManager**
+activate PLAYER
+MediaSessionService->MediaSessionService:dispatchMediaKeyEventLocked()
+activate PLAYER
+MediaSessionService->MediaSessionRecord:sendMediaButton()
+deactivate PLAYER
+deactivate PLAYER
+activate MediaSessionRecord
+MediaSessionRecord->SessionCb:sendMediaButton()
+deactivate MediaSessionRecord
+activate SessionCb
+SessionCb->CallbackStub:onMediaButton()
+deactivate SessionCb
+activate CallbackStub
+CallbackStub->PlayerMediaSession:dispatchMediaButton()
+deactivate CallbackStub
+activate PlayerMediaSession
+PlayerMediaSession->CallbackMessageHandler:handleMessage()
+note right:**MSG_MEDIA_BUTTON**
+deactivate PlayerMediaSession
+activate CallbackMessageHandler
+CallbackMessageHandler->Callback:onMediaButtonEvent()
+deactivate CallbackMessageHandler
+
+@enduml
