@@ -14,6 +14,9 @@
 [ESP32-WROOM-32D & ESP32-WROOM-32U 技术规格书](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32d_esp32-wroom-32u_datasheet_cn.pdf)  
 [ESP32-WROOM-32D-V2.2 & ESP32-WROOM-32U-V2.1 模组参考设计 r1.0](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32desp32-wroom-32u_mo_zu_can_kao_she_ji_.zip)
 
+## 为什么没有I2C总线的标识?
+因为I2C的bus可以映射到任意引脚.
+
 ## 引脚定义(USB下)
 ### 左侧(自上而下)
 |板子标记|模组标记|F0|F1|F2|F3|F4|F5|
