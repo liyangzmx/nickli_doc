@@ -62,6 +62,8 @@
 
 ## IOT
 * [关于Esp8266](iot/esp8266.md)
+* [ESP32-WROOM-D32小板子](iot/esp32/esp32_board.md)
+* [ESP-IDF(ESP32) with VSCode](iot/esp32/esp_idf.md)
 
 <!-- --- -->
 <!-- * [C++ - Errors](lang/cpp/errors.md) -->
