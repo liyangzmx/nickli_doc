@@ -52,6 +52,7 @@
 * [PyVISA 控制 Keysight InfiniiVision 3000 系列示波器(@py)](tools/pyvisa/pyvisa.md)
 * [Jenkins - DingTalk](tools.tools/jenkins/jenkins_dingtalk.md)
 * [CMake 与 pkg-config](tools/cmake/cmake_pkg-config.md)
+* [DSLogic Plus - Ubuntu 20.04 LTS 下的安装](tools/dslogic/dslogic_install.md)
 
 ---
 
