@@ -1,0 +1,301 @@
+@startuml Bluetooth
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 32
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box A2dpService
+participant "[ProfileService]\nA2dpSinkService" as ProfileService #LightGreen
+participant AdapterService #LightGreen
+end box
+
+box Native
+participant bt_callbacks_t
+participant "AdapterService" as NAdapterService
+participant BluetoothInterfaceImpl
+end box
+
+box btif
+participant bt_interface_t
+participant stack_manager_t
+participant jni_thread
+participant management_thread
+participant hci_t
+end box
+
+box module
+participant osi_module
+participant btif_config_module
+' participant stack_config_module
+' participant btsnoop_module
+participant hci_module
+' participant packet_fragmenter_t
+participant hci_thread
+end box
+
+box HIDL
+participant BluetoothHci
+participant VendorInterface
+end box
+
+box libbt-vendor.so
+participant "libbt-vendor.so" as BLUETOOTH_VENDOR_LIB_INTERFACE
+end box
+
+bt_interface_t-->o NAdapterService:sBluetoothCallbacks
+
+->AdapterService:new
+note right:static
+activate AdapterService
+AdapterService->NAdapterService:classInitNative()
+deactivate AdapterService
+activate NAdapterService
+NAdapterService->NAdapterService:hal_util_load_bt_library()
+activate NAdapterService
+NAdapterService->NAdapterService:dlopen()
+note right:libbluetooth.so
+activate NAdapterService
+deactivate NAdapterService
+deactivate NAdapterService
+deactivate NAdapterService
+
+->AdapterService:onCreate()
+activate AdapterService
+AdapterService->NAdapterService:initNative()
+deactivate AdapterService
+activate NAdapterService
+NAdapterService-->BluetoothInterfaceImpl:new
+NAdapterService->BluetoothInterfaceImpl:Initialize()
+deactivate NAdapterService
+activate BluetoothInterfaceImpl
+BluetoothInterfaceImpl->BluetoothInterfaceImpl:hal_util_load_bt_library()
+activate BluetoothInterfaceImpl
+BluetoothInterfaceImpl-->bt_interface_t:new
+note right:libbluetooth.so:\n\
+bt_interface_t bluetoothInterface
+BluetoothInterfaceImpl->bt_interface_t:init()
+deactivate BluetoothInterfaceImpl
+deactivate BluetoothInterfaceImpl
+activate bt_interface_t
+bt_interface_t-->stack_manager_t:new
+bt_interface_t->stack_manager_t:init_stack()
+deactivate bt_interface_t
+activate stack_manager_t
+stack_manager_t-->management_thread:new
+deactivate stack_manager_t
+management_thread->management_thread:event_init_stack()
+activate management_thread
+management_thread->management_thread:module_init()
+note right:OSI_MODULE\n\
+osi_module.cc:osi_module
+activate management_thread
+management_thread->osi_module:osi_init()
+deactivate management_thread
+activate osi_module
+osi_module->osi_module:future_new_immediate()
+activate osi_module
+' osi_module-->future_t:new
+deactivate osi_module
+deactivate osi_module
+
+management_thread->management_thread:module_init()
+note right:BT_UTILS_MODULE\n\
+bt_utils.cc:bt_utils_module
+activate management_thread
+deactivate management_thread
+management_thread->management_thread:module_init()
+note right:BTIF_CONFIG_MODULE\n\
+btif_config.cc:btif_config_module
+activate management_thread
+management_thread->btif_config_module:init()
+deactivate management_thread
+activate btif_config_module
+btif_config_module->btif_config_module:btif_config_open()
+activate btif_config_module
+' btif_config_module-->config_t:new
+deactivate btif_config_module
+btif_config_module->btif_config_module:config_get_string()
+activate btif_config_module
+deactivate btif_config_module
+btif_config_module->btif_config_module:read_or_set_metrics_salt()
+activate btif_config_module
+deactivate btif_config_module
+btif_config_module->btif_config_module:future_new_immediate()
+activate btif_config_module
+' btif_config_module-->future_t:new
+deactivate btif_config_module
+deactivate btif_config_module
+
+management_thread->management_thread:btif_init_bluetooth()
+activate management_thread
+management_thread->management_thread:bte_main_boot_entry()
+activate management_thread
+management_thread->management_thread:module_init()
+note right:INTEROP_MODULE\n\
+interop.cc:interop_module
+activate management_thread
+deactivate management_thread
+management_thread->management_thread:hci_layer_get_interface()
+activate management_thread
+management_thread->management_thread:init_layer_interface()
+activate management_thread
+management_thread-->hci_t:new
+deactivate management_thread
+deactivate management_thread
+management_thread->hci_t:**.set_data_cb**
+management_thread->management_thread:module_init()
+note right:STACK_CONFIG_MODULE\n\
+stack_config.cc:stack_config_module
+' activate management_thread
+' management_thread->stack_config_module:init()
+' activate stack_config_module
+' ' stack_config_module-->config_t:new
+' deactivate stack_config_module
+deactivate management_thread
+deactivate management_thread
+management_thread-->jni_thread:new
+deactivate management_thread
+deactivate management_thread
+activate jni_thread
+jni_thread->jni_thread:btif_jni_associate()
+activate jni_thread
+jni_thread->bt_callbacks_t:thread_evt_cb()
+note right:com_****_AdapterService.cpp:\n\
+sBluetoothCallbacks
+deactivate jni_thread
+deactivate jni_thread
+
+
+->ProfileService:onStartCommand()
+activate ProfileService
+ProfileService->ProfileService:doStart()
+activate ProfileService
+ProfileService->AdapterService:onProfileServiceStateChanged()
+deactivate ProfileService
+deactivate ProfileService
+activate AdapterService
+AdapterService->AdapterService:processProfileServiceStateChanged()
+note right:STATE_ON
+activate AdapterService
+AdapterService->NAdapterService:enableNative()
+deactivate AdapterService
+deactivate AdapterService
+NAdapterService->bt_interface_t:**.enable**
+bt_interface_t->stack_manager_t:**.start_up_stack_async**
+stack_manager_t->management_thread:event_start_up_stack()
+activate management_thread
+management_thread->management_thread:module_start_up()
+note right:btif_config_module
+management_thread->btif_config_module:**.start_up**
+management_thread->management_thread:bte_main_enable()
+activate management_thread
+' management_thread->btsnoop_module:**.start_up**
+management_thread->hci_module:**.start_up**
+deactivate management_thread
+
+
+activate hci_module
+hci_module->hci_module:hci_module_start_up()
+activate hci_module
+' hci_module->packet_fragmenter_t:**.init**
+hci_module->hci_thread:hci_initialize()
+deactivate hci_module
+deactivate hci_module
+activate hci_thread
+hci_thread-->BluetoothHci:new
+hci_thread-->BluetoothHci:initialize()
+deactivate hci_thread
+activate BluetoothHci
+BluetoothHci->VendorInterface:Initialize()
+deactivate BluetoothHci
+activate VendorInterface
+VendorInterface-->VendorInterface:new
+VendorInterface->VendorInterface:Open()
+activate VendorInterface
+VendorInterface->VendorInterface:dlopen()
+note right:libbt-vendor.so
+VendorInterface->VendorInterface:dlsym()
+activate VendorInterface
+VendorInterface->BLUETOOTH_VENDOR_LIB_INTERFACE:**.init**
+deactivate VendorInterface
+deactivate VendorInterface
+deactivate VendorInterface
+activate BLUETOOTH_VENDOR_LIB_INTERFACE
+BLUETOOTH_VENDOR_LIB_INTERFACE->BLUETOOTH_VENDOR_LIB_INTERFACE:init()
+activate BLUETOOTH_VENDOR_LIB_INTERFACE
+BLUETOOTH_VENDOR_LIB_INTERFACE->BLUETOOTH_VENDOR_LIB_INTERFACE:soc_init()
+activate BLUETOOTH_VENDOR_LIB_INTERFACE
+BLUETOOTH_VENDOR_LIB_INTERFACE->BLUETOOTH_VENDOR_LIB_INTERFACE:userial_vendor_init()
+activate BLUETOOTH_VENDOR_LIB_INTERFACE
+deactivate BLUETOOTH_VENDOR_LIB_INTERFACE
+BLUETOOTH_VENDOR_LIB_INTERFACE->BLUETOOTH_VENDOR_LIB_INTERFACE:le2bd()
+activate BLUETOOTH_VENDOR_LIB_INTERFACE
+deactivate BLUETOOTH_VENDOR_LIB_INTERFACE
+BLUETOOTH_VENDOR_LIB_INTERFACE->BLUETOOTH_VENDOR_LIB_INTERFACE:property_set()
+activate BLUETOOTH_VENDOR_LIB_INTERFACE
+note left:"wc_transport.stack_bdaddr"
+deactivate BLUETOOTH_VENDOR_LIB_INTERFACE
+deactivate BLUETOOTH_VENDOR_LIB_INTERFACE
+deactivate BLUETOOTH_VENDOR_LIB_INTERFACE
+deactivate BLUETOOTH_VENDOR_LIB_INTERFACE
+
+
+management_thread->management_thread:do_in_jni_thread()
+activate management_thread
+management_thread->jni_thread:DoInThread()
+deactivate management_thread
+activate jni_thread
+jni_thread->jni_thread:event_signal_stack_up()
+activate jni_thread
+jni_thread->jni_thread:btif_queue_connect_next()
+activate jni_thread
+deactivate jni_thread
+jni_thread->bt_callbacks_t:**.adapter_state_changed_cb**
+deactivate jni_thread
+deactivate jni_thread
+deactivate jni_thread
+
+@enduml
