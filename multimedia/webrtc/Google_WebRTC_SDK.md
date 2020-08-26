@@ -16,7 +16,7 @@
 ## 自行编译安装
 ### 安装deptools
 `$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git`  
-`$ export PATH=/path/to/depot_tools:$PATH`  
+`$ export PATH=$PATH:/path/to/depot_tools`  
 
 参考: [depot_tools_tutorial - SETTING UP](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up)  
 
