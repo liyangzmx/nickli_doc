@@ -51,6 +51,7 @@
 * [Jenkins - DingTalk](tools.tools/jenkins/jenkins_dingtalk.md)
 * [CMake 与 pkg-config](tools/cmake/cmake_pkg-config.md)
 * [DSLogic Plus - Ubuntu 20.04 LTS 下的安装](tools/dslogic/dslogic_install.md)
+* [nRF Sniffer for Bluetooth LE](tools/nrf_sniffer/nrf_sniffer.md)
 
 ---
 
