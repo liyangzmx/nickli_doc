@@ -1,7 +1,5 @@
-# Personal doc set
-个人文档集
+# 个人博客
 
-# 目录
 ## Android
 
 ### Native
