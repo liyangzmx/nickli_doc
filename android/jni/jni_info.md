@@ -2,13 +2,14 @@
 
 ## 官方参考
 Android:  
-    [Android NDK](https://developer.android.com/ndk)
-    [向您的项目添加 C 和 C++ 代码](https://developer.android.com/studio/projects/add-native-code.html)  
-    [Configure NDK Path](https://github.com/android/ndk-samples/wiki/Configure-NDK-Path)  
-    [CMake](https://developer.android.com/ndk/guides/cmake.html)  
-    [JNI 提示](https://developer.android.com/training/articles/perf-jni)  
-    [使用 Memory Profiler 查看 Java 堆和内存分配](https://developer.android.com/studio/profile/memory-profiler#jni-references)
-    [JNI Local Reference Changes in ICS](https://android-developers.googleblog.com/2011/11/jni-local-reference-changes-in-ics.html)
+* [Android NDK](https://developer.android.com/ndk)
+* [向您的项目添加 C 和 C++ 代码](https://developer.android.com/studio/projects/add-native-code.html)  
+* [Configure NDK Path](https://github.com/android/ndk-samples/wiki/Configure-NDK-Path)  
+* [CMake](https://developer.android.com/ndk/guides/cmake.html)  
+* [JNI 提示](https://developer.android.com/training/articles/perf-jni)  
+* [使用 Memory Profiler 查看 Java 堆和内存分配](https://developer.android.com/studio/profile/memory-profiler#jni-references)
+* [JNI Local Reference Changes in ICS](https://android-developers.googleblog.com/2011/11/jni-local-reference-changes-in-ics.html)  
+* [android/ndk-samples](https://github.com/android/ndk-samples)
 
 
 Oracle:  
