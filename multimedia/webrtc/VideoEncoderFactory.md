@@ -1,4 +1,7 @@
 # VideoEncoderFactory
+
+对于`VideoEncoderFactory`接口(Java层), 通常的实现是:`DefaultVideoEncoderFactory`.
+
 `VideoEncoderFactory`是从外部设置进来的:
 ```
 public class PeerConnectionFactory {
@@ -251,3 +254,164 @@ ScopedJavaLocalRef<jobject> NativeToScopedJavaPeerConnectionFactory(...){
 
 类的关系图:  
 ![VideoEncoderFactory](VideoEncoderFactory.png)
+
+
+## DefaultVideoEncoderFactory创建LibvpxVp8Encoder
+从`DefaultVideoEncoderFactory.createEncoder()`开始
+```
+public class DefaultVideoEncoderFactory implements VideoEncoderFactory {
+    ...
+    @Nullable
+    @Override
+    public VideoEncoder createEncoder(VideoCodecInfo info) {
+        final VideoEncoder softwareEncoder = softwareVideoEncoderFactory.createEncoder(info);
+        final VideoEncoder hardwareEncoder = hardwareVideoEncoderFactory.createEncoder(info);
+        if (hardwareEncoder != null && softwareEncoder != null) {
+            // Both hardware and software supported, wrap it in a software fallback
+            return new VideoEncoderFallback(
+                /* fallback= */ softwareEncoder, /* primary= */ hardwareEncoder);
+        }
+        return hardwareEncoder != null ? hardwareEncoder : softwareEncoder;
+    }
+    ...
+}
+```
+
+引出两个EncoderFactory: `SoftwareVideoEncoderFactory`和`HardwareVideoEncoderFactory`, 先看`SoftwareVideoEncoderFactory`:
+```
+public class SoftwareVideoEncoderFactory implements VideoEncoderFactory {
+    @Nullable
+    @Override
+    public VideoEncoder createEncoder(VideoCodecInfo info) {
+        if (info.name.equalsIgnoreCase("VP8")) {
+            return new LibvpxVp8Encoder();
+        }
+        if (info.name.equalsIgnoreCase("VP9") && LibvpxVp9Encoder.nativeIsSupported()) {
+            return new LibvpxVp9Encoder();
+        }
+        return null;
+    }
+    ...
+}
+```
+
+`LibvpxVp8Encoder`是实际解码的类么? 还是仅仅只是一个Java层的引用? 
+```
+public class LibvpxVp8Encoder extends WrappedNativeVideoEncoder {
+  @Override
+  public long createNativeVideoEncoder() {
+    return nativeCreateEncoder();
+  }
+
+  static native long nativeCreateEncoder();
+
+  @Override
+  public boolean isHardwareEncoder() {
+    return false;
+  }
+}
+```
+
+是一个引用, 那么它什么时候被调用? 其实实在`VideoEncoderFactoryWrapper::CreateVideoEncoder()`中从Native调用到Java的
+```
+std::unique_ptr<VideoEncoder> VideoEncoderFactoryWrapper::CreateVideoEncoder(...){
+    ...
+    ScopedJavaLocalRef<jobject> j_codec_info =
+            SdpVideoFormatToVideoCodecInfo(jni, format);
+    ScopedJavaLocalRef<jobject> encoder = Java_VideoEncoderFactory_createEncoder(
+            jni, encoder_factory_, j_codec_info);
+    ...
+    return JavaToNativeVideoEncoder(jni, encoder);
+}
+```
+首先通过`Java_VideoEncoderFactory_createEncoder)`创建了一个java层的Encoder, 然后将Java层的解码器转换成Native层的Encoder, 最后创建实际供使用的`VideoEncoderWrapper`. `Java_VideoEncoderFactory_createEncoder()`实际上就是`DefaultVideoEncoderFactory.createEncoder()`, 上文已经说过, 它将返回一个Java层的`LibvpxVp8Encoder`, 所以这里的`encoder`就是`LibvpxVp8Encoder`对应的`jobject`了.
+
+继续看`JavaToNativeVideoEncoder()`:
+```
+std::unique_ptr<VideoEncoder> JavaToNativeVideoEncoder(...){
+    const jlong native_encoder =
+            Java_VideoEncoder_createNativeVideoEncoder(jni, j_encoder);
+    VideoEncoder* encoder;
+    if (native_encoder == 0) {
+        encoder = new VideoEncoderWrapper(jni, j_encoder);
+    } else {
+        encoder = reinterpret_cast<VideoEncoder*>(native_encoder);
+    }
+    return std::unique_ptr<VideoEncoder>(encoder);
+}
+```
+
+`Java_VideoEncoder_createNativeVideoEncoder`实际上就是`LibvpxVp8Encoder.createNativeVideoEncoder()`, 调用Java层的初始化接口, 去初始化`LibvpxVp8Encoder`
+的Native层, 由上文进一步调用到:
+```
+JNI_GENERATOR_EXPORT jlong Java_org_webrtc_LibvpxVp8Encoder_nativeCreateEncoder(
+    JNIEnv* env,
+    jclass jcaller) {
+  return JNI_LibvpxVp8Encoder_CreateEncoder(env);
+}
+```
+
+继续看JNI:
+```
+static jlong JNI_LibvpxVp8Encoder_CreateEncoder(JNIEnv* jni) {
+  return jlongFromPointer(VP8Encoder::Create().release());
+}
+```
+
+`VP8Encoder::Create()`明显是创建了一个解码器:
+```
+std::unique_ptr<VideoEncoder> VP8Encoder::Create() {
+  return std::make_unique<LibvpxVp8Encoder>(LibvpxInterface::CreateEncoder(),
+                                            VP8Encoder::Settings());
+}
+```
+
+先看下`LibvpxInterface::CreateEncoder()`这个接口, 它返回一个`LibvpxVp8Facade{LibvpxInterface}`, 用来构造`LibvpxVp8Encoder`:
+```
+std::unique_ptr<LibvpxInterface> LibvpxInterface::CreateEncoder() {
+  return std::make_unique<LibvpxVp8Facade>();
+}
+```
+
+`LibvpxVp8Facade`实现了`LibvpxInterface`接口, 那么`LibvpxInterface`接口的定义:
+```
+class LibvpxInterface {
+    ...
+    virtual vpx_codec_err_t codec_encode(vpx_codec_ctx_t* ctx,
+            const vpx_image_t* img,
+            vpx_codec_pts_t pts,
+            uint64_t duration,
+            vpx_enc_frame_flags_t flags,
+            uint64_t deadline) const = 0;
+    ...
+}
+```
+
+接着看`LibvpxVp8Encoder`的构造:
+```
+LibvpxVp8Encoder::LibvpxVp8Encoder(std::unique_ptr<LibvpxInterface> interface,
+                                   VP8Encoder::Settings settings)
+    : libvpx_(std::move(interface)),
+    ...
+    framerate_controller_(variable_framerate_experiment_.framerate_limit) {
+}
+```
+
+最后调用`LibvpxVp8Encoder::Encode()`时
+```
+int LibvpxVp8Encoder::Encode(const VideoFrame& frame,
+        const std::vector<VideoFrameType>* frame_types) {
+    ...
+    while (num_tries == 0 ||
+            (num_tries == 1 &&
+            error == WEBRTC_VIDEO_CODEC_TARGET_BITRATE_OVERSHOOT)) {
+        ...
+        error = libvpx_->codec_encode(&encoders_[0], &raw_images_[0], timestamp_,
+                duration, 0, VPX_DL_REALTIME);
+    }
+    ...
+}
+```
+
+最后`LibvpxVp8Encoder`本身被`VideoEncoderFactoryWrapper::CreateVideoEncoder()`返回了, 此时类图关系如下:  
+![LibvpxVp8Encoder](LibvpxVp8Encoder.png)
