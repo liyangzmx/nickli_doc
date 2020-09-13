@@ -54,7 +54,7 @@
 
 ## Tools
 * **Pluto**
-  * [GNURadio](tools/pluto/GNURadio.md)
+  * [GNURadio](tools/pluto/gnuradio.md)
 * [CMake - VSCode+CMake构建基本的cpp应用](tools/plantuml/cmake/cmake_vscode.md)
 * [PlantUML - VSCode+PlantUML插件绘制软件时序图](tools/plantuml/plantuml.md)
 * [Graphviz - 状态图](tools/graphviz/graphviz.md)
