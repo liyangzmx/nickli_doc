@@ -1,0 +1,87 @@
+cmake_minimum_required( VERSION 3.8.1)
+
+project(ffmpeg)
+
+add_definitions(
+    -DHAVE_AV_CONFIG_H
+    -D__USE_GNU
+    -DARCH_AARCH64
+)
+
+add_library(avutil SHARED 
+    libavutil/adler32.c
+    libavutil/aes.c
+    libavutil/aes_ctr.c
+    libavutil/audio_fifo.c
+    libavutil/avstring.c
+    libavutil/avsscanf.c
+    libavutil/base64.c
+    libavutil/blowfish.c
+    libavutil/bprint.c
+    libavutil/buffer.c
+    libavutil/cast5.c
+    libavutil/camellia.c
+    libavutil/channel_layout.c
+    libavutil/color_utils.c
+    libavutil/cpu.c
+    libavutil/crc.c
+    libavutil/des.c
+    libavutil/dict.c
+    libavutil/display.c
+    libavutil/downmix_info.c
+    libavutil/encryption_info.c
+    libavutil/error.c
+    libavutil/eval.c
+    libavutil/fifo.c
+    libavutil/file.c
+    libavutil/file_open.c
+    libavutil/float_dsp.c
+    libavutil/fixed_dsp.c
+    libavutil/frame.c
+    libavutil/hash.c
+    libavutil/hdr_dynamic_metadata.c
+    libavutil/hmac.c
+    libavutil/hwcontext.c
+    libavutil/hwcontext_mediacodec.c
+    libavutil/imgutils.c
+    libavutil/integer.c
+    libavutil/intmath.c
+    libavutil/lfg.c
+    libavutil/lls.c
+    libavutil/log.c
+    libavutil/log2_tab.c
+    libavutil/mathematics.c
+    libavutil/mastering_display_metadata.c
+    libavutil/md5.c
+    libavutil/mem.c
+    libavutil/murmur3.c
+    libavutil/opt.c
+    libavutil/parseutils.c
+    libavutil/pixdesc.c
+    libavutil/pixelutils.c
+    libavutil/random_seed.c
+    libavutil/rational.c
+    libavutil/reverse.c
+    libavutil/rc4.c
+    libavutil/ripemd.c
+    libavutil/samplefmt.c
+    libavutil/sha.c
+    libavutil/sha512.c
+    libavutil/slicethread.c
+    libavutil/spherical.c
+    libavutil/stereo3d.c
+    libavutil/threadmessage.c
+    libavutil/time.c
+    libavutil/timecode.c
+    libavutil/tree.c
+    libavutil/twofish.c
+    libavutil/utils.c
+    libavutil/xga_font_data.c
+    libavutil/xtea.c
+    libavutil/tea.c
+    libavutil/tx.c
+)
+# set_target_properties(avutil PROPERTIES LINKER_LANGUAGE C)
+target_include_directories(avutil PRIVATE 
+    ./
+)
