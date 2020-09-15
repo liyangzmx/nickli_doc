@@ -3,9 +3,9 @@ cmake_minimum_required( VERSION 3.8.1)
 project(ffmpeg)
 
 add_definitions(
-    -DHAVE_AV_CONFIG_H
-    -D__USE_GNU
-    -DARCH_AARCH64
+    HAVE_AV_CONFIG_H
+    __USE_GNU
+    ARCH_AARCH64
 )
 
 add_library(avutil SHARED 
