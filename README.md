@@ -30,7 +30,9 @@
 * [ExoPlayer - 扩展解码器](multimedia/exoplayer/exoplayer_ffmpeg.md)
 * [Camera - Preview with Java](multimedia/android/camera2.md)
 * [Camera - Preview with NDK](android/jni/camera_ndk_api.md)
-* [OpenGL - GLFW & GLAD 开始](multimedia/opengl/glfw_glad.md)
+* [OpenGL - GLFW & GLAD 开始](multimedia/opengl/glfw_glad.md) 
+* GStreamer
+  * [在Ubuntu上安装GStreamer并编译demo](multimedia/gstreamer/gstreamer_install.md)
 * WebRTC
   * [WebRTC - Google SDK简介](multimedia/webrtc/Google_WebRTC_SDK.md)
   * Classes
