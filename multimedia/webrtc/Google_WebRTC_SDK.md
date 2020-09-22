@@ -33,7 +33,7 @@
 [WebRTC Native Code](http://webrtc.github.io/webrtc-org/native-code/)  
 
 ### 编译(通用)
-`gn gen out/Debug --args='target_os="android" target_cpu="arm"'`  
+`gn gen out/Debug --args='target_os="android" target_cpu="arm" use_custom_libcxx=false'`  
 `ninja -C out/Debug`  
 
 ### 编译(Android Demo App)
