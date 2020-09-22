@@ -66,6 +66,7 @@
 * [DSLogic Plus - Ubuntu 20.04 LTS 下的安装](tools/dslogic/dslogic_install.md)
 * [nRF Sniffer for Bluetooth LE](tools/nrf_sniffer/nrf_sniffer.md)
 * [man手册中文](tools/shell/man.md)
+* [Jenkins Install on Ubuntu and gradle build](tool/../tools/jenkins/jenkins_install_on_ubuntu.md)
 
 ---
 
