@@ -1,4 +1,4 @@
-# 个人博客
+# James Li 的 Multimedia笔记
 
 ## HarmonyOS
 * [Openharmony](openharmony/openharmony.md)
