@@ -1,8 +1,5 @@
 # James Li 的 Multimedia笔记
 
-## HarmonyOS
-* [Openharmony](openharmony/openharmony.md)
-
 ## Android
 
 ### Native
@@ -82,3 +79,6 @@
 
 <!-- --- -->
 <!-- * [C++ - Errors](lang/cpp/errors.md) -->
+
+## HarmonyOS
+* [Openharmony](openharmony/openharmony.md)
