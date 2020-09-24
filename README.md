@@ -34,7 +34,7 @@
 * GStreamer
   * [在Ubuntu上安装GStreamer并编译demo](multimedia/gstreamer/gstreamer_install.md)
 * WebRTC
-  * [WebRTC - Google SDK简介](multimedia/webrtc/Google_WebRTC_SDK.md)
+  * [WebRTC - Google SDK简介](multimedia/webrtc/webrtc_android.md)
   * Classes
     * [JavaAudioDeviceModule](multimedia/webrtc/JavaAudioDeviceModule.md)
     * [BuiltinAudioEncoderFactoryFactory](multimedia/webrtc/BuiltinAudioEncoderFactoryFactory.md)
