@@ -114,6 +114,30 @@ $ npm cache clean --force
 $ rm -rf node_modules package-lock.json
 $ npm install
 ... ...
+unziping /home/nickli/.clang-tools/clang-tools-r298696-linux.tgz
+
+gzip: stdin: unexpected end of file
+tar: 归档文件中异常的 EOF
+tar: 归档文件中异常的 EOF
+tar: Error is not recoverable: exiting now
+... ...
+
+make -j32 BUILDTYPE=Release -C out
+make[1]: 进入目录“/home/nickli/mediasoup-demo/server/node_modules/mediasoup/worker/out”
+  CC(target) /home/nickli/mediasoup-demo/server/node_modules/mediasoup/worker/out/Release/obj.target/libsrtp/deps/libsrtp/srtp/srtp/ekt.o
+  CC(target) /home/nickli/mediasoup-demo/server/node_modules/mediasoup/worker/out/Release/obj.target/libsrtp/deps/libsrtp/srtp/srtp/srtp.o
+  CC(target) /home/nickli/mediasoup-demo/server/node_modules/mediasoup/worker/out/Release/obj.target/libsrtp/deps/libsrtp/srtp/crypto/cipher/aes.o
+... ...
+
+make[1]: 离开目录“/home/nickli/mediasoup-demo/server/node_modules/mediasoup/worker/out”
+make: 离开目录“/home/nickli/mediasoup-demo/server/node_modules/mediasoup/worker”
+npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents@1.2.13 (node_modules/fsevents):
+npm WARN notsup SKIPPING OPTIONAL DEPENDENCY: Unsupported platform for fsevents@1.2.13: wanted {"os":"darwin","arch":"any"} (current: {"os":"linux","arch":"x64"})
+
+added 935 packages from 464 contributors in 2027.092s
+
+30 packages are looking for funding
+  run `npm fund` for details
 ```
 
 无休止的报错, 待续...
