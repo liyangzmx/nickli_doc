@@ -30,6 +30,7 @@
 * [OpenGL - GLFW & GLAD 开始](multimedia/opengl/glfw_glad.md) 
 * GStreamer
   * [在Ubuntu上安装GStreamer并编译demo](multimedia/gstreamer/gstreamer_install.md)
+  * [在Ubuntu上安装GStreamer For Android并编译demo](multimedia/gstreamer/gstreamer_install_android.md)
   * [编译&运行 Gstreamer - gst-rtsp-server](multimedia/gstreamer/gst-rtsp-server.md)
 * WebRTC
   * [WebRTC - Google SDK简介](multimedia/webrtc/webrtc_android.md)

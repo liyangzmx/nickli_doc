@@ -61,4 +61,8 @@ $ npm install mediasoup
 ```
 $ git clone https://github.com/versatica/mediasoup-demo.git
 $ cd mediasoup-demo
+$ git checkout v3
+$ cd server
+$ npm install
+$ npm start
 ```
