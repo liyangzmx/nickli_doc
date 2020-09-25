@@ -1,0 +1,177 @@
+@startuml ExoPlayer_MediaDrm
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 32
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+
+participant DownloadTracker
+participant WidevineOfflineLicenseFetchTask
+participant OfflineLicenseHelper
+participant ConditionVariable
+participant "[MediaDrmCallback]\nHttpMediaDrmCallback" as HttpMediaDrmCallback
+participant ProvisioningManagerImpl
+participant DefaultDrmSession
+participant DrmSessionManager
+participant ProvisionRequest
+participant "[ExoMediaDrm]\nFrameworkMediaDrm" as FrameworkMediaDrm
+participant MediaDrm
+
+MediaDrm-->o FrameworkMediaDrm:mediaDrm
+
+->DownloadTracker:onPrepared()
+activate DownloadTracker
+DownloadTracker->DownloadTracker:getFirstFormatWithDrmInitData()
+activate DownloadTracker
+DownloadTracker-->WidevineOfflineLicenseFetchTask:new
+DownloadTracker->WidevineOfflineLicenseFetchTask:execute()
+deactivate DownloadTracker
+deactivate DownloadTracker
+activate WidevineOfflineLicenseFetchTask
+WidevineOfflineLicenseFetchTask->WidevineOfflineLicenseFetchTask:doInBackground()
+activate WidevineOfflineLicenseFetchTask
+WidevineOfflineLicenseFetchTask-->OfflineLicenseHelper:newWidevineInstance()
+WidevineOfflineLicenseFetchTask->OfflineLicenseHelper:downloadLicense()
+deactivate WidevineOfflineLicenseFetchTask
+deactivate WidevineOfflineLicenseFetchTask
+activate OfflineLicenseHelper
+OfflineLicenseHelper->OfflineLicenseHelper:blockingKeyRequest()
+OfflineLicenseHelper->OfflineLicenseHelper:openBlockingKeyRequest()
+OfflineLicenseHelper->DrmSessionManager:acquireSession()
+activate DrmSessionManager
+OfflineLicenseHelper->ConditionVariable:close()
+deactivate OfflineLicenseHelper
+activate ConditionVariable
+note over ConditionVariable:**BLOCKING...**
+
+DrmSessionManager->DrmSessionManager:createAndAcquire\nSessionWithRetry()
+activate DrmSessionManager
+DrmSessionManager-->DefaultDrmSession:new
+DrmSessionManager->DefaultDrmSession:acquire()
+deactivate DrmSessionManager
+deactivate DrmSessionManager
+activate DefaultDrmSession
+DefaultDrmSession->DefaultDrmSession:openInternal()
+activate DefaultDrmSession
+
+DefaultDrmSession->MediaDrm:openSession()
+note left:**Provisioned**
+DefaultDrmSession->MediaDrm:createMediaCrypto()
+note left:**Provisioned**
+
+DefaultDrmSession->ProvisioningManagerImpl:provisionRequired()
+note left:**NotProvisionedException**
+deactivate DefaultDrmSession
+deactivate DefaultDrmSession
+
+ProvisioningManagerImpl->DefaultDrmSession:provision()
+activate DefaultDrmSession
+DefaultDrmSession->FrameworkMediaDrm:getProvisionRequest()
+FrameworkMediaDrm->MediaDrm:getProvisionRequest()
+note over MediaDrm:...
+MediaDrm-->FrameworkMediaDrm:RET
+note left:MediaDrm.ProvisionRequest
+FrameworkMediaDrm-->ProvisionRequest:new
+ProvisionRequest-->o DefaultDrmSession:currentProvisionRequest()
+
+DefaultDrmSession->DefaultDrmSession:handleMessage()
+note left: **MSG_PROVISION**
+activate DefaultDrmSession
+DefaultDrmSession->HttpMediaDrmCallback:executeProvisionRequest()
+deactivate DefaultDrmSession
+deactivate DefaultDrmSession
+
+activate HttpMediaDrmCallback
+<-HttpMediaDrmCallback:**Requesting Provision...**
+HttpMediaDrmCallback-->DefaultDrmSession:onProvisionResponse()
+note right: BY **ResponseHandler.handleMessage(MSG_PROVISION)**
+deactivate HttpMediaDrmCallback
+activate DefaultDrmSession
+DefaultDrmSession->MediaDrm:provideProvisionResponse()
+DefaultDrmSession-->ProvisioningManagerImpl:onProvisionCompleted()
+deactivate DefaultDrmSession
+activate ProvisioningManagerImpl
+ProvisioningManagerImpl->DefaultDrmSession:onProvisionCompleted()
+deactivate ProvisioningManagerImpl
+
+activate DefaultDrmSession
+DefaultDrmSession->DefaultDrmSession:openInternal()
+activate DefaultDrmSession
+DefaultDrmSession->MediaDrm:openSession()
+note left:**Provisioned**
+DefaultDrmSession->MediaDrm:createMediaCrypto()
+note left:**Provisioned**
+DefaultDrmSession->ProvisioningManagerImpl:onError()
+note left:**NotProvisionedException**
+deactivate DefaultDrmSession
+
+DefaultDrmSession->DefaultDrmSession:doLicense()
+activate DefaultDrmSession
+DefaultDrmSession->DefaultDrmSession:postKeyRequest()
+activate DefaultDrmSession
+DefaultDrmSession->MediaDrm:getKeyRequest()
+DefaultDrmSession->DefaultDrmSession:handleMessage()
+note left:**MSG_KEYS**
+DefaultDrmSession->HttpMediaDrmCallback:executeKeyRequest()
+deactivate DefaultDrmSession
+deactivate DefaultDrmSession
+deactivate DefaultDrmSession
+
+
+activate HttpMediaDrmCallback
+<-HttpMediaDrmCallback:**Requesting Key...**
+HttpMediaDrmCallback-->DefaultDrmSession:onKeyResponse()
+note right: BY **ResponseHandler.handleMessage(MSG_KEYS)**
+deactivate HttpMediaDrmCallback
+activate DefaultDrmSession
+DefaultDrmSession->MediaDrm:provideKeyResponse()
+deactivate DefaultDrmSession
+DefaultDrmSession-->ConditionVariable:open()
+note over ConditionVariable:**UNBLOCKING...**
+ConditionVariable-->OfflineLicenseHelper:RET
+deactivate ConditionVariable
+
+@enduml
