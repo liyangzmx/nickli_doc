@@ -103,3 +103,21 @@ Input #0, rtsp, from 'rtsp://127.0.0.1:8554/test':sq=    0B f=0/0
 ```
 
 可以看到测试画面则测试通过.
+
+## 如何知道`gobject-introspection`在哪个包中?
+执行命令:
+```
+$ dpkg -S g-ir-scanner
+gobject-introspection: /usr/bin/g-ir-scanner
+gobject-introspection: /usr/share/man/man1/g-ir-scanner.1.gz
+```
+可以看到`gobject-introspection`在`gobject-introspection`包中.
+
+其实还有一个命令也是一样的效果:
+```
+$ sudo apt-get install apt-file
+$ apt-file search g-ir-scanner
+gobject-introspection: /usr/bin/g-ir-scanner
+gobject-introspection: /usr/share/man/man1/g-ir-scanner.1.gz
+```
+`apt-file`提供了一些额外的功能, 可以从`$ man apt-file`中获得更多信息.
