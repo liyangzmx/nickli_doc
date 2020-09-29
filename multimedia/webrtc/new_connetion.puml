@@ -1,0 +1,350 @@
+@startuml WebRTC new Connetion
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #OrangeRed
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightLightGreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveLightGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveLightGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+participant APP
+participant SDPObserver
+participant CreateSdpObserverJni
+participant WebRtcSessionDescriptionFactory
+participant PeerConnectionObserverJni
+participant PeerConntion
+participant JsepTransportController
+participant JsepTransport
+
+
+participant BasicIceController
+participant P2PTransportChannel
+participant BasicPortAllocatorSession
+
+participant StunBindingRequest
+participant StunRequestManager
+participant ProxyConnection
+participant UDPPort
+participant AllocationSequence
+participant AsyncUDPSocket
+participant SocketDispatcher
+
+APP->PeerConntion:CreateOffer()
+activate PeerConntion
+PeerConntion->PeerConntion:DoCreateOffer()
+note left:**ChainOperation()**
+activate PeerConntion
+PeerConntion->WebRtcSessionDescriptionFactory:CreateOffer()
+deactivate PeerConntion
+deactivate PeerConntion
+activate WebRtcSessionDescriptionFactory
+WebRtcSessionDescriptionFactory->WebRtcSessionDescriptionFactory:InternalCreateOffer()
+activate WebRtcSessionDescriptionFactory
+WebRtcSessionDescriptionFactory->WebRtcSessionDescriptionFactory:PostCreateSessionDescriptionSucceeded()
+activate WebRtcSessionDescriptionFactory
+WebRtcSessionDescriptionFactory->WebRtcSessionDescriptionFactory:OnSuccess()
+note left:**MSG_CREATE_SESSIONDESCRIPTION_SUCCESS**
+activate WebRtcSessionDescriptionFactory
+WebRtcSessionDescriptionFactory->CreateSdpObserverJni:OnSuccess()
+deactivate WebRtcSessionDescriptionFactory
+deactivate WebRtcSessionDescriptionFactory
+deactivate WebRtcSessionDescriptionFactory
+deactivate WebRtcSessionDescriptionFactory
+
+CreateSdpObserverJni->SDPObserver:onCreateSuccess()
+note over SDPObserver: **...**
+SDPObserver->PeerConntion:SetLocalDescription()
+activate PeerConntion
+PeerConntion-->PeerConntion:DoSetLocalDescription()
+note left:**ChainOperation()**
+activate PeerConntion
+PeerConntion->PeerConntion:ApplyLocalDescription()
+activate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+
+APP->PeerConntion:SetRemoteDescription()
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:DoSetRemoteDescription()
+note left:**ChainOperation()**
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:ApplyRemoteDescription()
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:PushdownTransportDescription()
+activate PeerConntion #LightGreen
+PeerConntion->JsepTransportController:SetRemoteDescription()
+deactivate PeerConntion
+deactivate PeerConntion
+activate JsepTransportController #LightGreen
+JsepTransportController-->JsepTransportController:SetRemoteDescription()
+note left:**network_thread_**
+activate JsepTransportController #LightGreen
+deactivate JsepTransportController
+deactivate JsepTransportController
+
+PeerConntion->PeerConntion:UseCandidatesInSessionDescription()
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:UseCandidate()
+activate PeerConntion #LightGreen
+PeerConntion->JsepTransportController:AddRemoteCandidates()
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+activate JsepTransportController
+
+->APP:onRemoteIceCandidate()
+APP->PeerConntion:AddIceCandidate()
+activate PeerConntion
+PeerConntion-->PeerConntion:UseCandidate()
+note left:**ChainOperation()**
+activate PeerConntion
+PeerConntion->JsepTransportController:AddRemoteCandidates()
+deactivate PeerConntion
+deactivate PeerConntion
+
+activate JsepTransportController
+JsepTransportController->JsepTransport:AddRemoteCandidates()
+deactivate JsepTransportController
+deactivate JsepTransportController
+activate JsepTransport
+JsepTransport->P2PTransportChannel:AddRemoteCandidate()
+deactivate JsepTransport
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:FinishAddingRemoteCandidate()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:CreateConnections()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:CreateConnection()
+activate P2PTransportChannel
+P2PTransportChannel->UDPPort:CreateConnection()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate UDPPort
+UDPPort-->ProxyConnection:new
+deactivate UDPPort
+P2PTransportChannel->BasicIceController:AddConnection()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+ProxyConnection-->o BasicIceController:unpinged_connections_
+
+
+->PeerConntion:DoSetLocalDescription()
+PeerConntion->JsepTransportController:MaybeStartGathering()
+activate JsepTransportController
+JsepTransportController-->JsepTransportController:MaybeStartGathering()
+note left:**network_thread_**
+activate JsepTransportController
+JsepTransportController->P2PTransportChannel:MaybeStartGathering()
+deactivate JsepTransportController
+deactivate JsepTransportController
+activate P2PTransportChannel
+P2PTransportChannel->BasicPortAllocatorSession:StartGettingPorts()
+deactivate P2PTransportChannel
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnMessage()
+note left:**MSG_CONFIG_START**
+note left:**network_thread_**
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:GetPortConfigurations()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:ConfigReady()
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnMessage()
+note left:**MSG_CONFIG_READY**
+note left:**network_thread_**
+
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnConfigReady()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:AllocatePorts()
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+BasicPortAllocatorSession-->BasicPortAllocatorSession:OnMessage()
+note left:**network_thread_**
+note left:**MSG_ALLOCATE**
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnAllocate()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:DoAllocate()
+activate BasicPortAllocatorSession
+
+BasicPortAllocatorSession-->AllocationSequence:OnMessage()
+note left:**MSG_ALLOCATION_PHASE**
+note left:**PHASE_UDP**
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+activate AllocationSequence
+AllocationSequence->AllocationSequence:CreateUDPPorts()
+activate AllocationSequence
+AllocationSequence->BasicPortAllocatorSession:AddAllocatedPort()
+deactivate AllocationSequence
+deactivate AllocationSequence
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->UDPPort:PrepareAddress()
+deactivate BasicPortAllocatorSession
+activate UDPPort
+UDPPort->UDPPort:OnLocalAddressReady()
+activate UDPPort
+UDPPort->UDPPort:Port::AddAddress()
+
+UDPPort->UDPPort:Port::FinishAddingAddress()
+activate UDPPort
+UDPPort->BasicPortAllocatorSession:SignalCandidateReady()
+deactivate UDPPort
+deactivate UDPPort
+activate BasicPortAllocatorSession
+UDPPort->UDPPort:MaybePrepareStunCandidate()
+activate UDPPort
+UDPPort->UDPPort:SendStunBindingRequests()
+activate UDPPort
+UDPPort->UDPPort:SendStunBindingRequest()
+activate UDPPort
+UDPPort->StunRequestManager:Send()
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+
+activate StunRequestManager
+StunRequestManager->StunRequestManager:SendDelayed()
+activate StunRequestManager
+StunRequestManager-->StunBindingRequest:OnMessage()
+note left:**MSG_STUN_SEND**
+deactivate StunRequestManager
+deactivate StunRequestManager
+activate StunBindingRequest
+StunBindingRequest->StunRequestManager:SignalSendPacket()
+deactivate StunBindingRequest
+activate StunRequestManager
+StunRequestManager->ProxyConnection:OnSendStunPacket()
+deactivate StunRequestManager
+activate ProxyConnection
+ProxyConnection->UDPPort:SendTo()
+deactivate ProxyConnection
+
+PhysicalSocketServer->PhysicalSocketServer:WaitPoll()
+activate PhysicalSocketServer
+PhysicalSocketServer->SocketDispatcher:OnEvent()
+deactivate PhysicalSocketServer
+activate SocketDispatcher
+SocketDispatcher-->AsyncUDPSocket:SignalReadEvent()
+deactivate SocketDispatcher
+activate AsyncUDPSocket
+AsyncUDPSocket->AsyncUDPSocket:OnReadEvent()
+activate AsyncUDPSocket
+AsyncUDPSocket-->AllocationSequence:SignalReadPacket()
+deactivate AsyncUDPSocket
+deactivate AsyncUDPSocket
+activate AllocationSequence
+AllocationSequence->AllocationSequence:OnReadPacket()
+activate AllocationSequence
+AllocationSequence->UDPPort:HandleIncomingPacket()
+deactivate AllocationSequence
+deactivate AllocationSequence
+
+activate UDPPort
+UDPPort->UDPPort:OnReadPacket()
+activate UDPPort
+UDPPort->StunRequestManager:CheckResponse()
+deactivate UDPPort
+deactivate UDPPort
+
+activate StunRequestManager
+StunRequestManager->StunBindingRequest:OnResponse()
+deactivate StunRequestManager
+activate StunBindingRequest
+StunBindingRequest->UDPPort:OnStunBindingRequestSucceeded()
+deactivate StunBindingRequest
+activate UDPPort
+UDPPort->UDPPort:Port::AddAddress()
+deactivate UDPPort
+
+UDPPort->UDPPort:Port::FinishAddingAddress()
+activate UDPPort
+UDPPort->BasicPortAllocatorSession:SignalCandidateReady()
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+
+
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnCandidateReady()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->P2PTransportChannel:SignalCandidatesReady()
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:OnCandidatesReady()
+activate P2PTransportChannel
+P2PTransportChannel-->JsepTransportController:SignalCandidateGathered()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate JsepTransportController
+JsepTransportController->JsepTransportController:OnTransportCandidateGathered_n()
+activate JsepTransportController
+JsepTransportController-->PeerConntion:SignalIceCandidatesGathered()
+deactivate JsepTransportController
+deactivate JsepTransportController
+
+
+activate PeerConntion
+PeerConntion->PeerConntion:OnTransportControllerCandidatesGathered()
+activate PeerConntion
+PeerConntion->PeerConntion:OnIceCandidate()
+activate PeerConntion
+PeerConntion->PeerConnectionObserverJni:OnIceCandidate()
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+
+PeerConnectionObserverJni->APP:onIceCandidate()
+activate APP
+deactivate APP
+
+
+@enduml

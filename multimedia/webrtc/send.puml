@@ -1,0 +1,144 @@
+@startuml WebRTC RTP Receive
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #OrangeRed
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box RTP
+participant RtpSenderEgress
+participant ModuleRtpRtcpImpl
+participant PacketRouter
+participant ProcessThreadImpl
+participant PacingController
+participant PacedSender
+participant RTPSender
+participant RTPSenderAudio
+
+end box
+
+box Call
+participant AudioCodingModuleImpl
+participant ChannelReceive
+participant ChannelSend
+participant AcmReceiver
+end box
+
+box NetEq
+participant AudioSendStream
+participant AudioMixerImpl
+participant AudioTransportImpl
+end box
+
+box Audio
+participant AudioDeviceBuffer
+participant AudioTrackJni
+participant AudioRecordJni
+end box
+
+
+AudioRecordJni<-:DataIsRecorded()
+activate AudioRecordJni
+AudioRecordJni->AudioDeviceBuffer:DeliverRecordedData()
+deactivate AudioRecordJni
+activate AudioDeviceBuffer
+AudioDeviceBuffer->AudioTransportImpl:RecordedDataIsAvailable()
+deactivate AudioDeviceBuffer
+activate AudioTransportImpl
+AudioTransportImpl->AudioSendStream:SendAudioData()
+deactivate AudioTransportImpl
+activate AudioSendStream
+AudioSendStream->ChannelSend:ProcessAndEncodeAudio()
+deactivate AudioSendStream
+activate ChannelSend
+' ->ChannelSend:ProcessAndEncodeAudio()
+ChannelSend-[#Blue]->AudioCodingModuleImpl:Add10MsData()
+deactivate ChannelSend
+activate AudioCodingModuleImpl
+AudioCodingModuleImpl->AudioCodingModuleImpl:Encode()
+activate AudioCodingModuleImpl
+AudioCodingModuleImpl->ChannelSend:SendData()
+deactivate AudioCodingModuleImpl
+deactivate AudioCodingModuleImpl
+activate ChannelSend
+ChannelSend->ChannelSend:SendRtpAudio()
+activate ChannelSend
+ChannelSend->RTPSenderAudio:SendAudio()
+deactivate ChannelSend
+deactivate ChannelSend
+activate RTPSenderAudio
+RTPSenderAudio->RTPSender:SendToNetwork()
+deactivate RTPSenderAudio
+activate RTPSender
+RTPSender->PacedSender:EnqueuePackets()
+deactivate RTPSender
+
+ProcessThreadImpl->ProcessThreadImpl:Process()
+activate ProcessThreadImpl
+ProcessThreadImpl->PacedSender:Process()
+deactivate ProcessThreadImpl
+activate PacedSender
+PacedSender->PacingController:ProcessPackets()
+deactivate PacedSender
+activate PacingController
+PacingController->PacedSender:SendRtpPacket()
+deactivate PacingController
+activate PacedSender
+PacedSender->PacketRouter:SendPacket()
+deactivate PacedSender
+activate PacketRouter
+PacketRouter->ModuleRtpRtcpImpl:TrySendPacket()
+deactivate PacketRouter
+activate ModuleRtpRtcpImpl
+ModuleRtpRtcpImpl->RtpSenderEgress:SendPacket()
+deactivate ModuleRtpRtcpImpl
+activate RtpSenderEgress
+RtpSenderEgress->RtpSenderEgress:SendPacketToNetwork()
+activate RtpSenderEgress
+RtpSenderEgress->
+deactivate RtpSenderEgress
+deactivate RtpSenderEgress
+
+@enduml

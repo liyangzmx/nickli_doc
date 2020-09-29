@@ -1,0 +1,673 @@
+@startuml WebRTC RTP Receive
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Red
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor Yellow
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+
+box REMOTE
+participant "SIGNAL SERVER" as SIGNAL_SERVER
+participant "STUN SERVER" as STUN_SERVER
+participant REMOTE
+end box
+
+box Java
+participant APP
+participant SDPObserver
+end box
+
+box Native
+participant CreateSdpObserverJni
+participant WebRtcSessionDescriptionFactory
+participant PeerProxyConnectionObserverJni
+participant PeerConntion
+participant JsepTransportController
+participant JsepTransport
+end box
+
+box UDP
+participant PhysicalSocketServer
+participant PhysicalSocket
+participant SocketDispatcher
+end box
+
+box Socket
+participant AsyncUDPSocket
+participant AllocationSequence
+participant StunRequestManager
+participant StunBindingRequest
+participant UDPPort
+participant BasicPortAllocatorSession
+participant "ProxyConnection" as ProxyConnection
+participant BasicIceController
+end box
+
+box DTLS
+participant P2PTransportChannel
+participant "[PacketTransportInternal]\n[DtlsTransportInternal]\nDtlsTransport" as DtlsTransport
+participant "[SrtpTransport]\nDtlsSrtpTransport" as SrtpTransport
+end box
+
+box SRTP
+participant SrtpTransport
+end box
+
+box RTP
+participant RtpSenderEgress
+participant ModuleRtpRtcpImpl
+participant PacketRouter
+participant Thread
+participant "[BaseChannel]\n[VoiceChannel]" as VoiceChannel
+participant "[VoiceMediaChannel]\n[WebRtcVoiceMediaChannel]" as WebRtcVoiceMediaChannel
+participant "internal::Call" as Call
+participant RtpStreamReceiverController
+participant RtpDemuxer
+participant PacingController
+participant PacedSender
+participant ProcessThreadImpl
+participant RTPSender
+participant RTPSenderAudio
+end box
+
+box Call
+participant AudioCodingModuleImpl
+participant ChannelSend
+participant ChannelReceive
+participant AcmReceiver
+end box
+
+box NetEq
+participant NetEqImpl
+participant AudioReceiveStream
+participant AudioSendStream
+participant AudioMixerImpl
+participant AudioTransportImpl
+end box
+
+box Audio
+participant AudioDeviceBuffer
+participant AudioTrackJni
+participant AudioRecordJni
+end box
+
+
+
+' ------ ICE Candidate -------
+APP->PeerConntion:CreateOffer()
+activate PeerConntion
+PeerConntion->PeerConntion:DoCreateOffer()
+note left:**ChainOperation()**
+activate PeerConntion
+PeerConntion->WebRtcSessionDescriptionFactory:CreateOffer()
+deactivate PeerConntion
+deactivate PeerConntion
+activate WebRtcSessionDescriptionFactory
+WebRtcSessionDescriptionFactory->WebRtcSessionDescriptionFactory:InternalCreateOffer()
+activate WebRtcSessionDescriptionFactory
+WebRtcSessionDescriptionFactory->WebRtcSessionDescriptionFactory:PostCreateSessionDescriptionSucceeded()
+activate WebRtcSessionDescriptionFactory
+WebRtcSessionDescriptionFactory->WebRtcSessionDescriptionFactory:OnSuccess()
+note left:**MSG_CREATE_SESSIONDESCRIPTION_SUCCESS**
+activate WebRtcSessionDescriptionFactory
+WebRtcSessionDescriptionFactory->CreateSdpObserverJni:OnSuccess()
+deactivate WebRtcSessionDescriptionFactory
+deactivate WebRtcSessionDescriptionFactory
+deactivate WebRtcSessionDescriptionFactory
+deactivate WebRtcSessionDescriptionFactory
+
+CreateSdpObserverJni->SDPObserver:onCreateSuccess()
+note over SDPObserver: **...**
+SDPObserver->PeerConntion:SetLocalDescription()
+activate PeerConntion
+PeerConntion-->PeerConntion:DoSetLocalDescription()
+note left:**ChainOperation()**
+activate PeerConntion
+PeerConntion->PeerConntion:ApplyLocalDescription()
+activate PeerConntion
+deactivate PeerConntion
+
+' ------ SetLocalSescription
+
+
+PeerConntion->JsepTransportController:MaybeStartGathering()
+deactivate PeerConntion
+deactivate PeerConntion
+activate JsepTransportController
+JsepTransportController-->JsepTransportController:MaybeStartGathering()
+note left:**network_thread_**
+activate JsepTransportController
+JsepTransportController->P2PTransportChannel:MaybeStartGathering()
+deactivate JsepTransportController
+deactivate JsepTransportController
+activate P2PTransportChannel
+P2PTransportChannel->BasicPortAllocatorSession:StartGettingPorts()
+deactivate P2PTransportChannel
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnMessage()
+note left:**MSG_CONFIG_START**
+note left:**network_thread_**
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:GetPortConfigurations()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:ConfigReady()
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnMessage()
+note left:**MSG_CONFIG_READY**
+note left:**network_thread_**
+
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnConfigReady()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:AllocatePorts()
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+BasicPortAllocatorSession-->BasicPortAllocatorSession:OnMessage()
+note left:**network_thread_**
+note left:**MSG_ALLOCATE**
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnAllocate()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:DoAllocate()
+activate BasicPortAllocatorSession
+
+BasicPortAllocatorSession-->AllocationSequence:OnMessage()
+note left:**MSG_ALLOCATION_PHASE**
+note left:**PHASE_UDP**
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+activate AllocationSequence
+AllocationSequence->AllocationSequence:CreateUDPPorts()
+activate AllocationSequence
+AllocationSequence->BasicPortAllocatorSession:AddAllocatedPort()
+deactivate AllocationSequence
+deactivate AllocationSequence
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->UDPPort:PrepareAddress()
+deactivate BasicPortAllocatorSession
+activate UDPPort
+UDPPort->UDPPort:OnLocalAddressReady()
+activate UDPPort
+UDPPort->UDPPort:Port::AddAddress()
+
+UDPPort->UDPPort:Port::FinishAddingAddress()
+activate UDPPort
+UDPPort->BasicPortAllocatorSession:SignalCandidateReady()
+deactivate UDPPort
+deactivate UDPPort
+activate BasicPortAllocatorSession
+UDPPort->UDPPort:MaybePrepareStunCandidate()
+activate UDPPort
+UDPPort->UDPPort:SendStunBindingRequests()
+activate UDPPort
+UDPPort->UDPPort:SendStunBindingRequest()
+activate UDPPort
+UDPPort->StunRequestManager:Send()
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+
+activate StunRequestManager
+StunRequestManager->StunRequestManager:SendDelayed()
+activate StunRequestManager
+StunRequestManager-->StunBindingRequest:OnMessage()
+note left:**MSG_STUN_SEND**
+deactivate StunRequestManager
+deactivate StunRequestManager
+activate StunBindingRequest
+StunBindingRequest->StunRequestManager:SignalSendPacket()
+deactivate StunBindingRequest
+activate StunRequestManager
+StunRequestManager->ProxyConnection:OnSendStunPacket()
+deactivate StunRequestManager
+activate ProxyConnection
+ProxyConnection->UDPPort:SendTo()
+deactivate ProxyConnection
+activate UDPPort
+UDPPort-->STUN_SERVER:**STUN REQUEST**
+deactivate UDPPort
+
+PhysicalSocketServer->PhysicalSocketServer:WaitPoll()
+activate PhysicalSocketServer
+
+
+STUN_SERVER-->PhysicalSocketServer:**STUN REQUEST**
+PhysicalSocketServer->SocketDispatcher:OnEvent()
+deactivate PhysicalSocketServer
+activate SocketDispatcher
+SocketDispatcher-->AsyncUDPSocket:SignalReadEvent()
+deactivate SocketDispatcher
+activate AsyncUDPSocket
+AsyncUDPSocket->AsyncUDPSocket:OnReadEvent()
+activate AsyncUDPSocket
+AsyncUDPSocket-->AllocationSequence:SignalReadPacket()
+deactivate AsyncUDPSocket
+deactivate AsyncUDPSocket
+activate AllocationSequence
+AllocationSequence->AllocationSequence:OnReadPacket()
+activate AllocationSequence
+AllocationSequence->UDPPort:HandleIncomingPacket()
+deactivate AllocationSequence
+deactivate AllocationSequence
+
+activate UDPPort
+UDPPort->UDPPort:OnReadPacket()
+activate UDPPort
+UDPPort->StunRequestManager:CheckResponse()
+deactivate UDPPort
+deactivate UDPPort
+
+activate StunRequestManager
+StunRequestManager->StunBindingRequest:OnResponse()
+deactivate StunRequestManager
+activate StunBindingRequest
+StunBindingRequest->UDPPort:OnStunBindingRequestSucceeded()
+deactivate StunBindingRequest
+activate UDPPort
+UDPPort->UDPPort:Port::AddAddress()
+deactivate UDPPort
+
+UDPPort->UDPPort:Port::FinishAddingAddress()
+activate UDPPort
+UDPPort->BasicPortAllocatorSession:SignalCandidateReady()
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+
+
+BasicPortAllocatorSession->BasicPortAllocatorSession:OnCandidateReady()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->P2PTransportChannel:SignalCandidatesReady()
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:OnCandidatesReady()
+activate P2PTransportChannel
+P2PTransportChannel-->JsepTransportController:SignalCandidateGathered()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate JsepTransportController
+JsepTransportController->JsepTransportController:OnTransportCandidateGathered_n()
+activate JsepTransportController
+JsepTransportController-->PeerConntion:SignalIceCandidatesGathered()
+deactivate JsepTransportController
+deactivate JsepTransportController
+
+
+activate PeerConntion
+PeerConntion->PeerConntion:OnTransportControllerCandidatesGathered()
+activate PeerConntion
+PeerConntion->PeerConntion:OnIceCandidate()
+activate PeerConntion
+PeerConntion->PeerProxyConnectionObserverJni:OnIceCandidate()
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+
+PeerProxyConnectionObserverJni->APP:onIceCandidate()
+activate APP
+APP -> SIGNAL_SERVER:sendLocalIceCandidate()
+deactivate APP
+
+
+
+' ------ SetRemoteDescription ------
+SIGNAL_SERVER->APP:onRemoteDescription()
+activate APP
+APP->PeerConntion:SetRemoteDescription()
+deactivate APP
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:DoSetRemoteDescription()
+note left:**ChainOperation()**
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:ApplyRemoteDescription()
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:PushdownTransportDescription()
+activate PeerConntion #LightGreen
+PeerConntion->JsepTransportController:SetRemoteDescription()
+deactivate PeerConntion
+deactivate PeerConntion
+activate JsepTransportController #LightGreen
+JsepTransportController-->JsepTransportController:SetRemoteDescription()
+note left:**network_thread_**
+activate JsepTransportController #LightGreen
+deactivate JsepTransportController
+deactivate JsepTransportController
+
+PeerConntion->PeerConntion:UseCandidatesInSessionDescription()
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:UseCandidate()
+activate PeerConntion #LightGreen
+PeerConntion->JsepTransportController:AddRemoteCandidates()
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+activate JsepTransportController
+
+SIGNAL_SERVER->APP:onRemoteIceCandidate()
+APP->PeerConntion:AddIceCandidate()
+activate PeerConntion
+PeerConntion-->PeerConntion:UseCandidate()
+note left:**ChainOperation()**
+activate PeerConntion
+PeerConntion->JsepTransportController:AddRemoteCandidates()
+deactivate PeerConntion
+deactivate PeerConntion
+
+activate JsepTransportController
+JsepTransportController->JsepTransport:AddRemoteCandidates()
+deactivate JsepTransportController
+deactivate JsepTransportController
+activate JsepTransport
+JsepTransport->P2PTransportChannel:AddRemoteCandidate()
+deactivate JsepTransport
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:FinishAddingRemoteCandidate()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:CreateProxyConnections()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:CreateProxyConnection()
+activate P2PTransportChannel
+P2PTransportChannel->UDPPort:CreateProxyConnection()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate UDPPort
+UDPPort-->ProxyConnection:new
+deactivate UDPPort
+P2PTransportChannel->BasicIceController:AddProxyConnection()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+ProxyConnection-->o BasicIceController:unpinged_ProxyConnections_
+
+
+
+
+' ------ AUDIO Send & Receiver -------
+
+PhysicalSocketServer->PhysicalSocketServer:wait()
+activate PhysicalSocketServer #Yellow
+PhysicalSocketServer->PhysicalSocketServer:waitEPool()
+activate PhysicalSocketServer #Yellow
+
+REMOTE-->PhysicalSocketServer:**DATA**
+
+PhysicalSocketServer->PhysicalSocketServer:ProcessEvents()
+activate PhysicalSocketServer #Yellow
+PhysicalSocketServer->SocketDispatcher:OnEvent()
+deactivate PhysicalSocketServer
+deactivate PhysicalSocketServer
+deactivate PhysicalSocketServer
+SocketDispatcher-->AsyncUDPSocket:SignalReadEvent()
+deactivate SocketDispatcher
+activate AsyncUDPSocket #Yellow
+AsyncUDPSocket->AsyncUDPSocket:OnReadEvent()
+activate AsyncUDPSocket #Yellow
+AsyncUDPSocket-->AllocationSequence:SignalReadPacket()
+deactivate AsyncUDPSocket
+deactivate AsyncUDPSocket
+activate AllocationSequence #Yellow
+AllocationSequence->AllocationSequence:OnReadPacket()
+activate AllocationSequence #Yellow
+AllocationSequence->UDPPort:HandleIncomingPacket()
+deactivate AllocationSequence
+deactivate AllocationSequence
+activate UDPPort #Yellow
+
+UDPPort->UDPPort:OnReadPacket()
+activate UDPPort #Yellow
+UDPPort->ProxyConnection:OnReadPacket()
+deactivate UDPPort
+deactivate UDPPort
+activate ProxyConnection #Yellow
+ProxyConnection-->P2PTransportChannel:SignalReadPacket()
+deactivate ProxyConnection
+activate P2PTransportChannel #Yellow
+P2PTransportChannel->P2PTransportChannel:OnReadPacket()
+activate P2PTransportChannel #Yellow
+P2PTransportChannel-->DtlsTransport:SignalReadPacket()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate DtlsTransport #Yellow
+
+DtlsTransport->DtlsTransport:OnReadPacket()
+note left:**DTLS_TRANSPORT_CONNECTED**
+activate DtlsTransport #Yellow
+DtlsTransport-->SrtpTransport:SignalReadPacket()
+deactivate DtlsTransport
+deactivate DtlsTransport
+activate SrtpTransport #Yellow
+SrtpTransport->SrtpTransport:RtpTransport::OnReadPacket()
+activate SrtpTransport #Yellow
+SrtpTransport->SrtpTransport:OnRtpPacketReceived()
+activate SrtpTransport #Yellow
+
+SrtpTransport->SrtpTransport:RtpTransport::DemuxPacket()
+activate SrtpTransport #Yellow
+SrtpTransport->RtpDemuxer:OnRtpPacket()
+deactivate SrtpTransport
+deactivate SrtpTransport
+deactivate SrtpTransport
+deactivate SrtpTransport
+activate RtpDemuxer #Yellow
+
+RtpDemuxer->VoiceChannel:BaseChannel::OnRtpPacket()
+deactivate RtpDemuxer
+activate VoiceChannel #Yellow
+VoiceChannel-->WebRtcVoiceMediaChannel:OnPacketReceived()
+deactivate VoiceChannel
+activate WebRtcVoiceMediaChannel #DeepSkyBlue
+WebRtcVoiceMediaChannel->Call:DeliverPacket()
+deactivate WebRtcVoiceMediaChannel
+activate Call #DeepSkyBlue
+Call->Call:DeliverRtp()
+activate Call #DeepSkyBlue
+Call->RtpStreamReceiverController:OnRtpPacket()
+deactivate Call
+deactivate Call
+activate RtpStreamReceiverController #DeepSkyBlue
+RtpStreamReceiverController->RtpDemuxer:OnRtpPacket()
+deactivate RtpStreamReceiverController
+activate RtpDemuxer #DeepSkyBlue
+
+RtpDemuxer->ChannelReceive:OnRtpPacket()
+deactivate RtpDemuxer
+activate ChannelReceive #DeepSkyBlue
+ChannelReceive->ChannelReceive:ReceivePacket()
+activate ChannelReceive #DeepSkyBlue
+ChannelReceive->ChannelReceive:OnReceivedPayloadData()
+activate ChannelReceive #DeepSkyBlue
+ChannelReceive->AcmReceiver:InsertPacket()
+deactivate ChannelReceive
+deactivate ChannelReceive
+deactivate ChannelReceive
+deactivate ChannelReceive
+activate AcmReceiver #DeepSkyBlue
+
+AcmReceiver->NetEqImpl::InsertPacket()
+deactivate AcmReceiver
+activate NetEqImpl #DeepSkyBlue
+NetEqImpl->NetEqImpl:InsertPacketInternal()
+activate NetEqImpl #DeepSkyBlue
+deactivate NetEqImpl
+deactivate NetEqImpl
+
+AudioTrackJni<-:GetPlayoutData()
+activate AudioTrackJni #Pink
+AudioTrackJni->AudioDeviceBuffer:RequestPlayoutData()
+deactivate AudioTrackJni
+activate AudioDeviceBuffer #Pink
+AudioDeviceBuffer->AudioTransportImpl:NeedMorePlayData()
+deactivate AudioDeviceBuffer
+activate AudioTransportImpl #Pink
+AudioTransportImpl->AudioMixerImpl:Mix()
+deactivate AudioTransportImpl
+activate AudioMixerImpl #Pink
+AudioMixerImpl->AudioMixerImpl:GetAudioFromSources()
+activate AudioMixerImpl #Pink
+AudioMixerImpl->AudioReceiveStream:GetAudioFrameWithInfo()
+deactivate AudioMixerImpl
+deactivate AudioMixerImpl
+activate AudioReceiveStream #Pink
+AudioReceiveStream->ChannelReceive:GetAudioFrameWithInfo()
+deactivate AudioReceiveStream
+activate ChannelReceive #Pink
+ChannelReceive->AcmReceiver:GetAudio()
+deactivate ChannelReceive
+activate AcmReceiver #Pink
+AcmReceiver->NetEqImpl:GetAudio()
+deactivate AcmReceiver
+
+AudioRecordJni<-:DataIsRecorded()
+activate AudioRecordJni #Red
+AudioRecordJni->AudioDeviceBuffer:DeliverRecordedData()
+deactivate AudioRecordJni
+activate AudioDeviceBuffer #Red
+AudioDeviceBuffer->AudioTransportImpl:RecordedDataIsAvailable()
+deactivate AudioDeviceBuffer
+activate AudioTransportImpl #Red
+AudioTransportImpl->AudioSendStream:SendAudioData()
+deactivate AudioTransportImpl
+activate AudioSendStream #Red
+AudioSendStream->ChannelSend:ProcessAndEncodeAudio()
+deactivate AudioSendStream
+activate ChannelSend #Red
+' ->ChannelSend:ProcessAndEncodeAudio()
+ChannelSend-[#Blue]->AudioCodingModuleImpl:Add10MsData()
+deactivate ChannelSend
+activate AudioCodingModuleImpl #Red
+AudioCodingModuleImpl->AudioCodingModuleImpl:Encode()
+activate AudioCodingModuleImpl #Red
+AudioCodingModuleImpl->ChannelSend:SendData()
+deactivate AudioCodingModuleImpl
+deactivate AudioCodingModuleImpl
+activate ChannelSend #Red
+ChannelSend->ChannelSend:SendRtpAudio()
+activate ChannelSend #Red
+ChannelSend->RTPSenderAudio:SendAudio()
+deactivate ChannelSend
+deactivate ChannelSend
+activate RTPSenderAudio #Red
+RTPSenderAudio->RTPSender:SendToNetwork()
+deactivate RTPSenderAudio
+activate RTPSender #Red
+RTPSender->PacedSender:EnqueuePackets()
+deactivate RTPSender
+
+ProcessThreadImpl->ProcessThreadImpl:Process()
+activate ProcessThreadImpl #DeepSkyBlue
+ProcessThreadImpl->PacedSender:Process()
+deactivate ProcessThreadImpl
+activate PacedSender #DeepSkyBlue
+PacedSender->PacingController:ProcessPackets()
+deactivate PacedSender
+activate PacingController #DeepSkyBlue
+PacingController->PacedSender:SendRtpPacket()
+deactivate PacingController
+activate PacedSender #DeepSkyBlue
+PacedSender->PacketRouter:SendPacket()
+deactivate PacedSender
+activate PacketRouter #DeepSkyBlue
+PacketRouter->ModuleRtpRtcpImpl:TrySendPacket()
+deactivate PacketRouter
+activate ModuleRtpRtcpImpl #DeepSkyBlue
+ModuleRtpRtcpImpl->RtpSenderEgress:SendPacket()
+deactivate ModuleRtpRtcpImpl
+
+activate RtpSenderEgress #DeepSkyBlue
+RtpSenderEgress->RtpSenderEgress:SendPacketToNetwork()
+activate RtpSenderEgress #DeepSkyBlue
+RtpSenderEgress->WebRtcVoiceMediaChannel:SendRtp()
+deactivate RtpSenderEgress
+deactivate RtpSenderEgress
+activate WebRtcVoiceMediaChannel #DeepSkyBlue
+WebRtcVoiceMediaChannel->WebRtcVoiceMediaChannel:VoiceMediaChannel::SendPacket()
+activate WebRtcVoiceMediaChannel #DeepSkyBlue
+WebRtcVoiceMediaChannel->WebRtcVoiceMediaChannel:DoSendPacket()
+activate WebRtcVoiceMediaChannel #DeepSkyBlue
+WebRtcVoiceMediaChannel->VoiceChannel:BaseChannel::SendPacket()
+deactivate WebRtcVoiceMediaChannel
+deactivate WebRtcVoiceMediaChannel
+deactivate WebRtcVoiceMediaChannel
+activate VoiceChannel #DeepSkyBlue
+VoiceChannel-->Thread:Post()
+deactivate VoiceChannel
+activate Thread #Yellow
+Thread->VoiceChannel:BaseChannel::SendPacket()
+deactivate Thread
+activate VoiceChannel #Yellow
+VoiceChannel->SrtpTransport:SendRtpPacket()
+deactivate VoiceChannel
+activate SrtpTransport #Yellow
+SrtpTransport->DtlsTransport:SendPacket()
+deactivate SrtpTransport
+activate DtlsTransport #Yellow
+DtlsTransport->P2PTransportChannel:SendPacket()
+deactivate DtlsTransport
+activate P2PTransportChannel #Yellow
+P2PTransportChannel->ProxyConnection:Send()
+deactivate P2PTransportChannel
+activate ProxyConnection #Yellow
+ProxyConnection->UDPPort:SendTo()
+deactivate ProxyConnection
+activate UDPPort #Yellow
+UDPPort->AsyncUDPSocket:SendTo()
+deactivate UDPPort
+activate AsyncUDPSocket #Yellow
+AsyncUDPSocket->PhysicalSocket:SendTo()
+deactivate AsyncUDPSocket
+activate PhysicalSocket #Yellow
+PhysicalSocket->PhysicalSocket:::sendto()
+activate PhysicalSocket
+PhysicalSocket-->REMOTE:**DATA**
+deactivate PhysicalSocket
+deactivate PhysicalSocket
+
+@enduml

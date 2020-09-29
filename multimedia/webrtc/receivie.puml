@@ -1,0 +1,228 @@
+@startuml WebRTC RTP Receive
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #OrangeRed
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box UDP
+participant PhysicalSocketServer
+participant SocketDispatcher
+end box
+
+box Socket
+participant AsyncUDPSocket
+participant AllocationSequence
+participant UDPPort
+participant Connection
+end box
+
+box DTLS
+participant P2PTransportChannel
+participant DtlsTransport
+end box
+
+box SRTP
+participant SrtpTransport
+end box
+
+box RTP
+participant "[VoiceMediaChannel]\n[WebRtcVoiceMediaChannel]" as WebRtcVoiceMediaChannel
+participant "[BaseChannel]\n[VoiceChannel]" as VoiceChannel
+participant RtpDemuxer
+end box
+
+box Call
+participant RtpStreamReceiverController
+participant "internal::Call" as Call
+participant AudioCodingModuleImpl
+participant ChannelReceive
+participant AcmReceiver
+end box
+
+box NetEq
+participant NetEqImpl
+participant AudioReceiveStream
+participant AudioSendStream
+participant AudioMixerImpl
+participant AudioTransportImpl
+end box
+
+box Audio
+participant AudioDeviceBuffer
+participant AudioTrackJni
+end box
+
+PhysicalSocketServer->PhysicalSocketServer:wait()
+activate PhysicalSocketServer
+PhysicalSocketServer->PhysicalSocketServer:waitEPool()
+activate PhysicalSocketServer
+PhysicalSocketServer->PhysicalSocketServer:ProcessEvents()
+activate PhysicalSocketServer
+PhysicalSocketServer->SocketDispatcher:OnEvent()
+deactivate PhysicalSocketServer
+deactivate PhysicalSocketServer
+deactivate PhysicalSocketServer
+SocketDispatcher-->AsyncUDPSocket:SignalReadEvent()
+deactivate SocketDispatcher
+activate AsyncUDPSocket
+AsyncUDPSocket->AsyncUDPSocket:OnReadEvent()
+activate AsyncUDPSocket
+AsyncUDPSocket-->AllocationSequence:SignalReadPacket()
+deactivate AsyncUDPSocket
+deactivate AsyncUDPSocket
+activate AllocationSequence
+AllocationSequence->AllocationSequence:OnReadPacket()
+activate AllocationSequence
+AllocationSequence->UDPPort:HandleIncomingPacket()
+deactivate AllocationSequence
+deactivate AllocationSequence
+activate UDPPort
+
+UDPPort->UDPPort:OnReadPacket()
+activate UDPPort
+UDPPort->Connection:OnReadPacket()
+deactivate UDPPort
+deactivate UDPPort
+activate Connection
+Connection-->P2PTransportChannel:SignalReadPacket()
+deactivate Connection
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:OnReadPacket()
+activate P2PTransportChannel
+P2PTransportChannel-->DtlsTransport:SignalReadPacket()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate DtlsTransport
+
+DtlsTransport->DtlsTransport:OnReadPacket()
+note left:**DTLS_TRANSPORT_CONNECTED**
+activate DtlsTransport
+DtlsTransport-->SrtpTransport:SignalReadPacket()
+deactivate DtlsTransport
+deactivate DtlsTransport
+activate SrtpTransport
+SrtpTransport->SrtpTransport:RtpTransport::OnReadPacket()
+activate SrtpTransport
+SrtpTransport->SrtpTransport:OnRtpPacketReceived()
+activate SrtpTransport
+
+SrtpTransport->SrtpTransport:RtpTransport::DemuxPacket()
+activate SrtpTransport
+SrtpTransport->RtpDemuxer:OnRtpPacket()
+deactivate SrtpTransport
+deactivate SrtpTransport
+deactivate SrtpTransport
+deactivate SrtpTransport
+activate RtpDemuxer
+
+RtpDemuxer->VoiceChannel:BaseChannel::OnRtpPacket()
+deactivate RtpDemuxer
+activate VoiceChannel
+VoiceChannel->WebRtcVoiceMediaChannel:OnPacketReceived()
+deactivate VoiceChannel
+activate WebRtcVoiceMediaChannel
+WebRtcVoiceMediaChannel->Call:DeliverPacket()
+deactivate WebRtcVoiceMediaChannel
+activate Call
+Call->Call:DeliverRtp()
+activate Call
+Call->RtpStreamReceiverController:OnRtpPacket()
+deactivate Call
+deactivate Call
+activate RtpStreamReceiverController
+RtpStreamReceiverController->RtpDemuxer:OnRtpPacket()
+deactivate RtpStreamReceiverController
+activate RtpDemuxer
+
+RtpDemuxer->ChannelReceive:OnRtpPacket()
+deactivate RtpDemuxer
+activate ChannelReceive
+ChannelReceive->ChannelReceive:ReceivePacket()
+activate ChannelReceive
+ChannelReceive->ChannelReceive:OnReceivedPayloadData()
+activate ChannelReceive
+ChannelReceive->AcmReceiver:InsertPacket()
+deactivate ChannelReceive
+deactivate ChannelReceive
+deactivate ChannelReceive
+deactivate ChannelReceive
+activate AcmReceiver
+
+AcmReceiver->NetEqImpl::InsertPacket()
+deactivate AcmReceiver
+activate NetEqImpl
+NetEqImpl->NetEqImpl:InsertPacketInternal()
+activate NetEqImpl
+deactivate NetEqImpl
+deactivate NetEqImpl
+
+AudioTrackJni<-:GetPlayoutData()
+activate AudioTrackJni
+AudioTrackJni->AudioDeviceBuffer:RequestPlayoutData()
+deactivate AudioTrackJni
+activate AudioDeviceBuffer
+AudioDeviceBuffer->AudioTransportImpl:NeedMorePlayData()
+deactivate AudioDeviceBuffer
+activate AudioTransportImpl
+AudioTransportImpl->AudioMixerImpl:Mix()
+deactivate AudioTransportImpl
+activate AudioMixerImpl
+AudioMixerImpl->AudioMixerImpl:GetAudioFromSources()
+activate AudioMixerImpl
+AudioMixerImpl->AudioReceiveStream:GetAudioFrameWithInfo()
+deactivate AudioMixerImpl
+deactivate AudioMixerImpl
+activate AudioReceiveStream
+AudioReceiveStream->ChannelReceive:GetAudioFrameWithInfo()
+deactivate AudioReceiveStream
+activate ChannelReceive
+ChannelReceive->AcmReceiver:GetAudio()
+deactivate ChannelReceive
+activate AcmReceiver
+AcmReceiver->NetEqImpl:GetAudio()
+deactivate AcmReceiver
+
+@enduml
