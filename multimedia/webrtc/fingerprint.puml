@@ -1,0 +1,341 @@
+@startuml WebRTC Fingerprint
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor transparent
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightLightGreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveLightGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveLightGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+' participant PhysicalSocketServer
+' participant SocketDispatcher
+' participant AsyncUDPSocket
+' participant AllocationSequence
+' participant UDPPort
+' participant ProxyConnection
+participant P2PTransportChannel
+participant PeerConnection
+participant JsepSessionDescription
+participant webrtc_sdp
+participant TransportDescription
+participant SSLFingerprint
+participant JsepTransport
+participant DtlsTransport
+
+->PeerConnection:SetRemoteDescription()
+activate PeerConnection
+PeerConnection->PeerConnection:SetRemoteDescription()
+note left:**network_thread_**
+activate PeerConnection
+PeerConnection->PeerConnection:JavaToNativeSessionDescription()
+activate PeerConnection
+PeerConnection->PeerConnection:CreateSessionDescription()
+activate PeerConnection
+PeerConnection-->JsepSessionDescription:new
+PeerConnection->webrtc_sdp:SdpDeserialize()
+deactivate PeerConnection
+deactivate PeerConnection
+activate webrtc_sdp
+webrtc_sdp-->TransportDescription:new
+webrtc_sdp->webrtc_sdp:ParseSessionDescription()
+activate webrtc_sdp
+webrtc_sdp-->TransportDescription:**PARESE fingerprint**
+note right:**STRING**
+deactivate webrtc_sdp
+
+webrtc_sdp->webrtc_sdp:ParseMediaDescription()
+activate webrtc_sdp
+webrtc_sdp->webrtc_sdp:ParseContentDescription()
+note left:**kMediaTypeVideo**
+activate webrtc_sdp
+webrtc_sdp->webrtc_sdp:ParseContent()
+activate webrtc_sdp
+webrtc_sdp-->SSLFingerprint:new
+webrtc_sdp->webrtc_sdp:ParseFingerprintAttribute()
+activate webrtc_sdp
+webrtc_sdp-->SSLFingerprint:**Initialize**
+deactivate webrtc_sdp
+deactivate webrtc_sdp
+deactivate webrtc_sdp
+deactivate webrtc_sdp
+activate SSLFingerprint
+SSLFingerprint-->o TransportDescription:identity_fingerprint
+deactivate SSLFingerprint
+webrtc_sdp->JsepSessionDescription:Initialize()
+webrtc_sdp->JsepSessionDescription:AddCandidate()
+deactivate webrtc_sdp
+
+PeerConnection->PeerConnection:DoSetRemoteDescription()
+activate PeerConnection
+PeerConnection->PeerConnection:ApplyRemoteDescription()
+activate PeerConnection
+JsepSessionDescription-->o PeerConnection:pending_remote_description_
+deactivate PeerConnection
+deactivate PeerConnection
+deactivate PeerConnection
+
+
+PeerConnection->PeerConnection:ApplyDescription_n()
+activate PeerConnection
+PeerConnection->JsepTransport:SetRemoteJsepTransportDescription()
+deactivate PeerConnection
+deactivate PeerConnection
+activate JsepTransport
+JsepTransport->JsepTransport:NegotiateAndSetDtlsParameters()
+activate JsepTransport
+JsepTransport->JsepTransport:SetNegotiatedDtlsParameters()
+activate JsepTransport
+JsepTransport->DtlsTransport:SetRemoteFingerprint()
+deactivate JsepTransport
+deactivate JsepTransport
+deactivate JsepTransport
+activate DtlsTransport
+DtlsTransport->OpenSSLStreamAdapter:SetPeerCertificateDigest()
+deactivate DtlsTransport
+activate OpenSSLStreamAdapter
+SSLFingerprint-->o OpenSSLStreamAdapter:peer_certificate_digest_value_
+deactivate OpenSSLStreamAdapter
+
+
+->P2PTransportChannel:RequestSortAndStateUpdate()
+activate P2PTransportChannel
+P2PTransportChannel-->P2PTransportChannel:SortConnectionsAndUpdateState()
+note left:**INVOKE**
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:UpdateState()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:SetWritable()
+activate P2PTransportChannel
+P2PTransportChannel-->DtlsTransport:SignalWritableState()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate DtlsTransport
+DtlsTransport->DtlsTransport:OnWritableState()
+activate DtlsTransport
+DtlsTransport->DtlsTransport:MaybeStartDtls()
+activate DtlsTransport
+DtlsTransport->OpenSSLStreamAdapter:StartSSL()
+deactivate DtlsTransport
+deactivate DtlsTransport
+deactivate DtlsTransport
+activate OpenSSLStreamAdapter
+OpenSSLStreamAdapter->OpenSSLStreamAdapter:BeginSSL()
+activate OpenSSLStreamAdapter
+OpenSSLStreamAdapter->OpenSSLStreamAdapter:SSL_new()
+activate OpenSSLStreamAdapter
+deactivate OpenSSLStreamAdapter
+OpenSSLStreamAdapter->OpenSSLStreamAdapter:ContinueSSL()
+note left:**Will Not OK...**
+activate OpenSSLStreamAdapter
+
+' -->PhysicalSocketServer:**PACKAET**
+' PhysicalSocketServer->SocketDispatcher:OnEvent()
+' deactivate PhysicalSocketServer
+' activate SocketDispatcher
+' SocketDispatcher-->AsyncUDPSocket:SignalReadEvent()
+' deactivate SocketDispatcher
+' activate AsyncUDPSocket
+' AsyncUDPSocket->AsyncUDPSocket:OnReadEvent()
+' activate AsyncUDPSocket
+' AsyncUDPSocket-->AllocationSequence:SignalReadPacket()
+' deactivate AsyncUDPSocket
+' deactivate AsyncUDPSocket
+' activate AllocationSequence
+' AllocationSequence->AllocationSequence:OnReadPacket()
+' activate AllocationSequence
+' AllocationSequence->UDPPort:HandleIncomingPacket()
+' deactivate AllocationSequence
+' deactivate AllocationSequence
+
+' activate UDPPort
+' UDPPort->UDPPort:OnReadPacket()
+' activate UDPPort
+' UDPPort->ProxyConnection:OnReadPacket()
+' deactivate UDPPort
+' deactivate UDPPort
+' activate ProxyConnection
+' ProxyConnection
+-->P2PTransportChannel:SignalReadPacket()
+deactivate ProxyConnection
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:OnReadPacket()
+activate P2PTransportChannel
+P2PTransportChannel-->DtlsTransport:SignalReadPacket()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate DtlsTransport
+
+DtlsTransport->DtlsTransport:OnReadPacket()
+note left:**DTLS_TRANSPORT_CONNECTED**
+DtlsTransport->DtlsTransport:HandleDtlsPacket()
+activate DtlsTransport
+DtlsTransport->StreamInterfaceChannel:OnPacketReceived()
+deactivate DtlsTransport
+deactivate DtlsTransport
+activate StreamInterfaceChannel
+
+StreamInterfaceChannel-->OpenSSLStreamAdapter:SignalEvent()
+deactivate StreamInterfaceChannel
+
+activate OpenSSLStreamAdapter
+OpenSSLStreamAdapter->OpenSSLStreamAdapter:OnEvent()
+activate OpenSSLStreamAdapter
+OpenSSLStreamAdapter->OpenSSLStreamAdapter:ContinueSSL()
+' activate OpenSSLStreamAdapter
+deactivate OpenSSLStreamAdapter
+deactivate OpenSSLStreamAdapter
+OpenSSLStreamAdapter->ssl_lib:SSL_accept()
+deactivate OpenSSLStreamAdapter
+deactivate OpenSSLStreamAdapter
+deactivate OpenSSLStreamAdapter
+
+activate ssl_lib
+ssl_lib->ssl_lib:SSL_set_accept_state()
+
+ssl_lib->ssl_lib:SSL_ssl_server_handshake()
+activate ssl_lib
+ssl_lib->ssl_lib:ssl_run_handshake()
+activate ssl_lib
+
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_start_accept**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_read_client_hello**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_select_certificate**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_select_parameters**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_send_server_hello**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_send_server_certificate**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_send_server_key_exchange**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_send_server_hello_done**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_read_client_certificate**
+
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_verify_client_certificate**
+activate ssl_lib
+ssl_lib->ssl_lib:do_verify_client_certificate()
+activate ssl_lib
+ssl_lib->ssl_lib:ssl_verify_peer_cert()
+activate ssl_lib
+ssl_lib->ssl_lib:session_verify_cert_chain()
+activate ssl_lib
+ssl_lib->ssl_lib:app_verify_callback()
+activate ssl_lib
+ssl_lib-->OpenSSLStreamAdapter:SSLVerifyCallback()
+deactivate ssl_lib
+deactivate ssl_lib
+deactivate ssl_lib
+deactivate ssl_lib
+deactivate ssl_lib
+activate OpenSSLStreamAdapter
+OpenSSLStreamAdapter->OpenSSLStreamAdapter:VerifyPeerCertificate()
+activate OpenSSLStreamAdapter
+OpenSSLStreamAdapter--> SSLFingerprint:**COMPARE**
+deactivate OpenSSLStreamAdapter
+deactivate OpenSSLStreamAdapter
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_read_client_key_exchange**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_read_change_cipher_spec**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_process_change_cipher_spec**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_read_next_proto**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_read_channel_id**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_read_client_finished**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_send_server_finished**
+
+note over ssl_lib:**...***
+ssl_lib->ssl_lib:ssl_server_handshake()
+note left:**state12_finish_server_handshake**
+activate ssl_lib
+deactivate ssl_lib
+deactivate ssl_lib
+deactivate ssl_lib
+deactivate ssl_lib
+
+
+@enduml

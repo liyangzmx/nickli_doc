@@ -47,8 +47,11 @@ skinparam {
     }
 }
 
+
+participant SIGNAL_SERVER
 participant APP
 participant SDPObserver
+participant PeerProxyConnectionObserverJni
 participant CreateSdpObserverJni
 participant WebRtcSessionDescriptionFactory
 participant PeerConnectionObserverJni
@@ -68,7 +71,9 @@ participant UDPPort
 participant AllocationSequence
 participant AsyncUDPSocket
 participant SocketDispatcher
+participant STUN_SERVER
 
+' ------ ICE Candidate -------
 APP->PeerConntion:CreateOffer()
 activate PeerConntion
 PeerConntion->PeerConntion:DoCreateOffer()
@@ -101,77 +106,13 @@ activate PeerConntion
 PeerConntion->PeerConntion:ApplyLocalDescription()
 activate PeerConntion
 deactivate PeerConntion
-deactivate PeerConntion
-deactivate PeerConntion
 
-APP->PeerConntion:SetRemoteDescription()
-activate PeerConntion #LightGreen
-PeerConntion->PeerConntion:DoSetRemoteDescription()
-note left:**ChainOperation()**
-activate PeerConntion #LightGreen
-PeerConntion->PeerConntion:ApplyRemoteDescription()
-activate PeerConntion #LightGreen
-PeerConntion->PeerConntion:PushdownTransportDescription()
-activate PeerConntion #LightGreen
-PeerConntion->JsepTransportController:SetRemoteDescription()
-deactivate PeerConntion
-deactivate PeerConntion
-activate JsepTransportController #LightGreen
-JsepTransportController-->JsepTransportController:SetRemoteDescription()
-note left:**network_thread_**
-activate JsepTransportController #LightGreen
-deactivate JsepTransportController
-deactivate JsepTransportController
-
-PeerConntion->PeerConntion:UseCandidatesInSessionDescription()
-activate PeerConntion #LightGreen
-PeerConntion->PeerConntion:UseCandidate()
-activate PeerConntion #LightGreen
-PeerConntion->JsepTransportController:AddRemoteCandidates()
-deactivate PeerConntion
-deactivate PeerConntion
-deactivate PeerConntion
-deactivate PeerConntion
-activate JsepTransportController
-
-->APP:onRemoteIceCandidate()
-APP->PeerConntion:AddIceCandidate()
-activate PeerConntion
-PeerConntion-->PeerConntion:UseCandidate()
-note left:**ChainOperation()**
-activate PeerConntion
-PeerConntion->JsepTransportController:AddRemoteCandidates()
-deactivate PeerConntion
-deactivate PeerConntion
-
-activate JsepTransportController
-JsepTransportController->JsepTransport:AddRemoteCandidates()
-deactivate JsepTransportController
-deactivate JsepTransportController
-activate JsepTransport
-JsepTransport->P2PTransportChannel:AddRemoteCandidate()
-deactivate JsepTransport
-activate P2PTransportChannel
-P2PTransportChannel->P2PTransportChannel:FinishAddingRemoteCandidate()
-activate P2PTransportChannel
-P2PTransportChannel->P2PTransportChannel:CreateConnections()
-activate P2PTransportChannel
-P2PTransportChannel->P2PTransportChannel:CreateConnection()
-activate P2PTransportChannel
-P2PTransportChannel->UDPPort:CreateConnection()
-deactivate P2PTransportChannel
-deactivate P2PTransportChannel
-activate UDPPort
-UDPPort-->ProxyConnection:new
-deactivate UDPPort
-P2PTransportChannel->BasicIceController:AddConnection()
-deactivate P2PTransportChannel
-deactivate P2PTransportChannel
-ProxyConnection-->o BasicIceController:unpinged_connections_
+' ------ SetLocalSescription
 
 
-->PeerConntion:DoSetLocalDescription()
 PeerConntion->JsepTransportController:MaybeStartGathering()
+deactivate PeerConntion
+deactivate PeerConntion
 activate JsepTransportController
 JsepTransportController-->JsepTransportController:MaybeStartGathering()
 note left:**network_thread_**
@@ -266,9 +207,15 @@ deactivate StunRequestManager
 activate ProxyConnection
 ProxyConnection->UDPPort:SendTo()
 deactivate ProxyConnection
+activate UDPPort
+UDPPort-->STUN_SERVER:**STUN REQUEST**
+deactivate UDPPort
 
 PhysicalSocketServer->PhysicalSocketServer:WaitPoll()
 activate PhysicalSocketServer
+
+
+STUN_SERVER-->PhysicalSocketServer:**STUN REQUEST**
 PhysicalSocketServer->SocketDispatcher:OnEvent()
 deactivate PhysicalSocketServer
 activate SocketDispatcher
@@ -337,14 +284,86 @@ PeerConntion->PeerConntion:OnTransportControllerCandidatesGathered()
 activate PeerConntion
 PeerConntion->PeerConntion:OnIceCandidate()
 activate PeerConntion
-PeerConntion->PeerConnectionObserverJni:OnIceCandidate()
+PeerConntion->PeerProxyConnectionObserverJni:OnIceCandidate()
 deactivate PeerConntion
 deactivate PeerConntion
 deactivate PeerConntion
 
-PeerConnectionObserverJni->APP:onIceCandidate()
+PeerProxyConnectionObserverJni->APP:onIceCandidate()
 activate APP
+APP -> SIGNAL_SERVER:sendLocalIceCandidate()
 deactivate APP
+
+
+
+' ------ SetRemoteDescription ------
+SIGNAL_SERVER->APP:onRemoteDescription()
+activate APP
+APP->PeerConntion:SetRemoteDescription()
+deactivate APP
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:DoSetRemoteDescription()
+note left:**ChainOperation()**
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:ApplyRemoteDescription()
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:PushdownTransportDescription()
+activate PeerConntion #LightGreen
+PeerConntion->JsepTransportController:SetRemoteDescription()
+deactivate PeerConntion
+deactivate PeerConntion
+activate JsepTransportController #LightGreen
+JsepTransportController-->JsepTransportController:SetRemoteDescription()
+note left:**network_thread_**
+activate JsepTransportController #LightGreen
+deactivate JsepTransportController
+deactivate JsepTransportController
+
+PeerConntion->PeerConntion:UseCandidatesInSessionDescription()
+activate PeerConntion #LightGreen
+PeerConntion->PeerConntion:UseCandidate()
+activate PeerConntion #LightGreen
+PeerConntion->JsepTransportController:AddRemoteCandidates()
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+deactivate PeerConntion
+activate JsepTransportController
+
+SIGNAL_SERVER->APP:onRemoteIceCandidate()
+APP->PeerConntion:AddIceCandidate()
+activate PeerConntion
+PeerConntion-->PeerConntion:UseCandidate()
+note left:**ChainOperation()**
+activate PeerConntion
+PeerConntion->JsepTransportController:AddRemoteCandidates()
+deactivate PeerConntion
+deactivate PeerConntion
+
+activate JsepTransportController
+JsepTransportController->JsepTransport:AddRemoteCandidates()
+deactivate JsepTransportController
+deactivate JsepTransportController
+activate JsepTransport
+JsepTransport->P2PTransportChannel:AddRemoteCandidate()
+deactivate JsepTransport
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:FinishAddingRemoteCandidate()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:CreateProxyConnections()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:CreateProxyConnection()
+activate P2PTransportChannel
+P2PTransportChannel->UDPPort:CreateProxyConnection()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+activate UDPPort
+UDPPort-->ProxyConnection:new
+deactivate UDPPort
+P2PTransportChannel->BasicIceController:AddProxyConnection()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+ProxyConnection-->o BasicIceController:unpinged_ProxyConnections_
 
 
 @enduml
