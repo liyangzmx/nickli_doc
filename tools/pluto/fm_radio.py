@@ -22,7 +22,6 @@ if __name__ == '__main__':
             print("Warning: failed to XInitThreads()")
 
 from PyQt5 import Qt
-from PyQt5.QtCore import QObject, pyqtSlot
 from gnuradio import qtgui
 from gnuradio.filter import firdes
 import sip
@@ -76,9 +75,8 @@ class fm_radio(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.volume = volume = 0.3
-        self.tuning = tuning = 87600000
-        self.samp_rate = samp_rate = 1920000
+        self.tuning = tuning = 91700000
+        self.samp_rate = samp_rate = 2000000
         self.rf_decim = rf_decim = 5
         self.interp = interp = 1
         self.deviation = deviation = 75000
@@ -87,25 +85,9 @@ class fm_radio(gr.top_block, Qt.QWidget):
         ##################################################
         # Blocks
         ##################################################
-        self._volume_range = Range(0, 1, 0.05, 0.3, 200)
-        self._volume_win = RangeWidget(self._volume_range, self.set_volume, 'Volume', "counter_slider", float)
-        self.top_grid_layout.addWidget(self._volume_win)
-        # Create the options list
-        self._tuning_options = (87600000, )
-        # Create the labels list
-        self._tuning_labels = ('tuning', )
-        # Create the combo box
-        self._tuning_tool_bar = Qt.QToolBar(self)
-        self._tuning_tool_bar.addWidget(Qt.QLabel('Station' + ": "))
-        self._tuning_combo_box = Qt.QComboBox()
-        self._tuning_tool_bar.addWidget(self._tuning_combo_box)
-        for _label in self._tuning_labels: self._tuning_combo_box.addItem(_label)
-        self._tuning_callback = lambda i: Qt.QMetaObject.invokeMethod(self._tuning_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._tuning_options.index(i)))
-        self._tuning_callback(self.tuning)
-        self._tuning_combo_box.currentIndexChanged.connect(
-            lambda i: self.set_tuning(self._tuning_options[i]))
-        # Create the radio buttons
-        self.top_grid_layout.addWidget(self._tuning_tool_bar)
+        self._tuning_range = Range(75000000, 110000000, 100000, 91700000, 200)
+        self._tuning_win = RangeWidget(self._tuning_range, self.set_tuning, 'tuning', "counter_slider", float)
+        self.top_grid_layout.addWidget(self._tuning_win)
         self.rational_resampler_xxx_0 = filter.rational_resampler_ccc(
                 interpolation=1,
                 decimation=rf_decim,
@@ -115,21 +97,21 @@ class fm_radio(gr.top_block, Qt.QWidget):
             1024, #fftsize
             firdes.WIN_BLACKMAN_hARRIS, #wintype
             tuning, #fc
-            20000000, #bw
+            10000000, #bw
             "", #name
             True, #plotfreq
             True, #plotwaterfall
             True, #plottime
             True #plotconst
         )
-        self.qtgui_sink_x_0.set_update_time(1.0/50)
+        self.qtgui_sink_x_0.set_update_time(1.0/20)
         self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.pyqwidget(), Qt.QWidget)
 
         self.qtgui_sink_x_0.enable_rf_freq(True)
 
         self.top_grid_layout.addWidget(self._qtgui_sink_x_0_win)
-        self.iio_pluto_source_0 = iio.pluto_source('ip:pluto.local', tuning, samp_rate, 20000000, 16384, True, True, True, 'fast_attack', 64, '', True)
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(volume)
+        self.iio_pluto_source_0 = iio.pluto_source('ip:pluto.local', tuning, samp_rate, 2000000, 16384, True, True, True, 'manual', 48, '', True)
+        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff(1)
         self.audio_sink_0 = audio.sink(48000, '', True)
         self.analog_fm_demod_cf_0 = analog.fm_demod_cf(
         	channel_rate=384000,
@@ -157,28 +139,20 @@ class fm_radio(gr.top_block, Qt.QWidget):
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
-    def get_volume(self):
-        return self.volume
-
-    def set_volume(self, volume):
-        self.volume = volume
-        self.blocks_multiply_const_vxx_0.set_k(self.volume)
-
     def get_tuning(self):
         return self.tuning
 
     def set_tuning(self, tuning):
         self.tuning = tuning
-        self._tuning_callback(self.tuning)
-        self.iio_pluto_source_0.set_params(self.tuning, self.samp_rate, 20000000, True, True, True, 'fast_attack', 64, '', True)
-        self.qtgui_sink_x_0.set_frequency_range(self.tuning, 20000000)
+        self.iio_pluto_source_0.set_params(self.tuning, self.samp_rate, 2000000, True, True, True, 'manual', 48, '', True)
+        self.qtgui_sink_x_0.set_frequency_range(self.tuning, 10000000)
 
     def get_samp_rate(self):
         return self.samp_rate
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.iio_pluto_source_0.set_params(self.tuning, self.samp_rate, 20000000, True, True, True, 'fast_attack', 64, '', True)
+        self.iio_pluto_source_0.set_params(self.tuning, self.samp_rate, 2000000, True, True, True, 'manual', 48, '', True)
 
     def get_rf_decim(self):
         return self.rf_decim
