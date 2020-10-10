@@ -48,6 +48,7 @@
 ---
 
 ### ROM
+* [bootchart 命令](android/boot/bootchart.md)
 * [AOSP Build](android/rom/../ROM/tutorial.md)
 * [Pixel XL的驱动程序二进制文件](android/ROM/pixel_drivers.md)
 * [Android Studio开发系统应用(尝试)](android/frameworks/system_app/system_app.md)
