@@ -754,17 +754,18 @@ $ sudo apt-get install apache2
 修改配置文件`/etc/apache2/sites-enabled/000-default.conf`:
 ```
 <VirtualHost *:80>
-    ServerAdmin webmaster@localhost
-    <Directory "/root">
-            Options Indexes FollowSymLinks Includes ExecCGI
-            AllowOverride All
-            Order allow,deny
-            Allow from all
-            Require all granted
-    </Directory>
-    DocumentRoot /root
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
+        ServerAdmin webmaster@localhost
+        <Directory "/root">
+                Options Indexes FollowSymLinks Includes ExecCGI
+                AllowOverride All
+                Order allow,deny
+                Allow from all
+                Require all granted
+        </Directory>
+        DocumentRoot /root
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 ```
 
