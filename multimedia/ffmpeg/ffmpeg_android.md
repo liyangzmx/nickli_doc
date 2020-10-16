@@ -86,7 +86,10 @@ make install
 ## 集成
 拷贝库和头文件:
 ```
-cp -r include/ $APP_PROJECT_PATH/app/src/main/cpp/
+export APP_PROJECT_PATH=~/work/... .../
+mkdir -p $APP_PROJECT_PATH/app/src/main/cpp/include/
+mkdir -p $APP_PROJECT_PATH/app/libs/arm64-v8a/
+cp -r android-build/includes/arm64-v8a/* $APP_PROJECT_PATH/app/src/main/cpp/include/
 cp -r android-build/libs/arm64-v8a/* $APP_PROJECT_PATH/app/libs/arm64-v8a/
 ```
 
@@ -148,7 +151,7 @@ set_target_properties(
         ${CMAKE_CURRENT_LIST_DIR}/../../../libs/${ANDROID_ABI}/libswscale.so
 )
 
-target_include_directories( ${CMAKE_CURRENT_LIST_DIR}/include/)
+target_include_directories(native-lib PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include/)
 
 target_link_libraries( # Specifies the target library.
     native-lib
@@ -217,3 +220,14 @@ static {
 }
 ```
 **注意:** 特别注意上述库的**加载顺序!!!**
+
+
+关于`iconv_close`符号的问题
+```
+2020-10-13 10:25:23.369 18707-18707/? E/AndroidRuntime: FATAL EXCEPTION: main
+    Process: com.wyze.wyzevideodownloader, PID: 18707
+    java.lang.UnsatisfiedLinkError: dlopen failed: cannot locate symbol "iconv_close" referenced by "/data/app/... .../base.apk!/lib/arm64-v8a/libavformat.so"...
+        at java.lang.Runtime.loadLibrary0(Runtime.java:1016)
+        at java.lang.System.loadLibrary(System.java:1657)
+```
+编译时API的版本太高了, 比如29, 改成21即可.

@@ -26,7 +26,7 @@ export CXX=$TOOLCHAIN/bin/aarch64-linux-android21-clang++
 	--disable-cli \
 	--host=aarch64-linux \
 	--cross-prefix=$TOOLCHAIN/bin/aarch64-linux-android- \
-	--sysroot=$TOOLCHAIN/sysroot \
+	--sysroot=$TOOLCHAIN/sysroot
 
 make clean
 make -j8
