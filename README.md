@@ -90,5 +90,8 @@
 <!-- --- -->
 <!-- * [C++ - Errors](lang/cpp/errors.md) -->
 
+## Nuttx
+* [Nuttx](nuttx/nuttx.md)
+
 ## HarmonyOS
 * [Openharmony](openharmony/openharmony.md)
