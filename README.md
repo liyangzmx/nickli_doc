@@ -32,7 +32,8 @@
   * [RTMP - RTMPDump in Android(无OpenSSL)](multimedia/rtmp/librtmp_android.md)
 * ExoPlayer
   * [ExoPlayer - Hello World](multimedia/exoplayer/exoplayer.md)
-  * [ExoPlayer - 扩展解码器](multimedia/exoplayer/exoplayer_ffmpeg.md)
+  * [ExoPlayer - 扩展解码器(过时)](multimedia/exoplayer/exoplayer_ffmpeg_old.md)
+  * [ExoPlayer - 强制ExoPlayer调用ffmpeg实现G711的解码支持](multimedia/exoplayer/ExoPlayer_ffmpeg.md)
 * GStreamer
   * [在Ubuntu上安装GStreamer并编译demo](multimedia/gstreamer/gstreamer_install.md)
   * [在Ubuntu上安装GStreamer For Android并编译demo](multimedia/gstreamer/gstreamer_install_android.md)
