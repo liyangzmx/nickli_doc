@@ -57,10 +57,10 @@ $ source ~/.bashrc
 $ cd ..
 
 # 插上stm32f4-disocvery板子到主机, 然后执行
-$ openocd -f /interface/stlink-v2.cfg -f target/stm32f1x.cfg -c 'init'   -c 'program nuttx/nuttx.bin verify reset' -c 'shutdown'
+$ openocd -f /interface/stlink.cfg -f target/stm32f4x.cfg -c 'init' -c 'program nuttx.hex verify reset' -c 'shutdown'
 
 # 当然以下命令也是可以的
-$ openocd -f openocd/tcl/interface/stlink-v2.cfg -f openocd/install/share/openocd/scripts/target/stm32f1x.cfg -c 'init'   -c 'program nuttx/nuttx.bin verify reset' -c 'shutdown'
+$ openocd -f openocd/tcl/interface/stlink.cfg -f openocd/install/share/openocd/scripts/target/stm32f4x.cfg -c 'init'   -c 'program nuttx/nuttx.hex verify reset' -c 'shutdown'
 ```
 
 # 编译Sphinx文档
