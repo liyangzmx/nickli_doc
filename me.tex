@@ -1,0 +1,169 @@
+\documentclass[12pt,a4paper,sans]{moderncv} 
+\moderncvstyle{fancy}
+\moderncvcolor{green}
+\nopagenumbers{}
+\usepackage[utf8]{inputenc} 
+\usepackage{CJK}
+\recomputelengths 
+\setmainfont{FandolHei}
+\setsansfont{FandolHei}
+\CJKtilde
+
+\usepackage[scale=0.98]{geometry}
+\name{李}{杨}
+\title{Android系统软件开发}
+\phone[mobile]{18410197201}
+\email{liyangzmx@163.com}
+\photo[64pt][0.4pt]{picture.png}
+
+\definecolor{lgreen}{HTML}{59b24c}
+
+\makeatletter\renewcommand*{\bibliographyitemlabel}{\@biblabel{\arabic{enumiv}}}\makeatother
+\begin{document}
+
+\makecvtitle
+
+\section{个人信息}
+\cvitem{职位}{Android驱动工程师}
+\cvitem{身高}{170cm}
+\cvitem{婚姻状态}{未婚}
+\cvitem{户口/国籍}{黑龙江省/中国}
+\cvitem{现住址}{北京市海淀区甘家口街道三虎桥南路17号院1号楼1单元}
+
+\section{个人优势}
+\cvitem{}{有多年的终端开发经验，熟悉终端行业所使用的多种芯片平台(Marvel/Atmel/Amlogic
+/MTK)；及Android 操作系统高通平台；熟练使用C/C++语言，熟悉Java，熟练使用
+软件CR/CI工具: Git/Gerrit/Jenkins等
+}
+
+\section{期望职位}
+\cvitem{Android 系统软件开发}{北京·\textbf{30K--35K}}
+\cvitem{}{通信/网络设备·移动互联网·电子/半导体/集成电路}
+
+\section{工作经验}
+\textcolor{lgreen}{\rule[-7pt]{20.5cm}{0.1em}}
+\subsection{Android 开发 (Multimedia)}
+\cventry{2020/6--2020/9}{WYZE中国-北京研发中心}{北京爱和健康科技有限公司}{}{}{
+\textbf{工作描述：}
+\begin{itemize}
+   \item Google WebRTC SDK(Andorid)的集成与二次开发(对接Signal Server等)
+   \item 完成部分WebRTC在App端的界面设计, 实现WebRTC视频流的边播边存等业务需求
+   \item 通过libwebrtc.a实现Android App下在Native层对WebRTC C++层PeerConnetion的访问实现Java层接口的增强
+   \item 通过WebRTC的SurfaceViewRenderer实现RTC画面的缩放(基于原本的源码)
+   \item 完成WebRTC的源码在Android Studio中的编译, 实现单步调试
+   \item 熟悉GStreamer,  验证GStreamer \& WebRTC插件进行RTC通信的可行性
+   \item 完成ffmpeg高版本的交叉编译与集成(包括openh264/fdk-aac等), 并配合GPUImage完成滤镜效果
+   \item 熟悉部分开源播放器: ijkplayer/ExoPlayer, 熟悉系统本身的播放器: MediaPlayer
+   \item 熟悉Android底层的多媒体框架: MeidaCodec/OMX IL/AudioFlinger/AudioPolicy
+   \item 熟悉NDK相关的开发流程, 熟悉Android Natvie代码的调试, 熟悉Framework的Java层调试
+\end{itemize}
+\textbf{项目经验:}
+\begin{itemize}
+\item WYZE App(Android)
+   \begin{itemize}
+      \item Camera相关插件, 与WebRTC技术有关的实现
+      \item 部分NDK底层的开发(基于libopenssl加密解密等)
+      \item 部分NDK底层编解码库的集成(基于ffmpeg等)
+      \item 新技术的调研:基于ExoPlayer的网络流播放器
+      \item 基于GStramer(for Android)的下一代播放器设计
+      \item 部分关于App的Jenkins打包Pipeline脚本(Groovy)
+   \end{itemize}
+\end{itemize}
+}
+
+\subsection{Android ROM开发工程师}
+\cventry{2019/3--2019/11}{声联网事业部}{上海证大喜马拉雅网络科技有限公司}{}{}{
+\textbf{工作描述：}
+\begin{itemize}
+   \item BSP 驱动软件的集成, 产品研发过程中相关问题的解决与维护
+   \item 积累了Camera API1/API2, HAL1等相关经验, 学习V4L2驱动结构
+   \item 积累了Audio Frameworks/tinyalsa/alsa driver等经验
+   \item 调研学习了GStreamer多媒体框架
+   \item 积累了部分CI相关的经验, 如: Jenkins各种插件配置, Gerrit Code Review权限配置等
+   \item 熟悉NDK相关的开发流程, 熟悉Android Natvie代码的调试(VSCode等工具)
+\end{itemize}
+\textbf{项目经验:}
+\begin{itemize}
+\item 触屏音箱
+   \begin{itemize}
+      \item BSP 驱动软件问题的解决与维护
+      \item 代码编译
+      \item 驱动BUG修复
+      \item 自动化测试方案
+      \item 系统应用的裁剪、集成
+      \item OTA 服务的集成、验证
+   \end{itemize}
+\end{itemize}
+}
+
+\subsection{Android BSP开发}
+\cventry{2018/3--2018/12}{智能硬件部}{北京小米移动软件科技有限公司}{}{}{
+\textbf{工作描述：}
+\begin{itemize}
+   \item 负责 Android 系统硬件的相关驱动:MIPI DSI LCD/Touch Panel/Keypads/PA等相关驱动
+   \item 配合硬件开发完成产品的验证、测试
+   \item 与第三方合作开发工厂测试 ROM
+\end{itemize}
+\textbf{项目经验: }
+\begin{itemize}
+   \item 小爱触屏音箱
+   \begin{itemize}
+      \item Camera/Ext PA/ALSPS/MIPI LCM/Touch/PMIC/Keypad 等驱动适配
+      \item 积累了Camera Porting的相关经验,熟悉Camera的硬件电路链接,熟悉CCI/CSI的相关概念
+      \item MTK SecureBoot v2.1/更新 dm-verity 证书/更新 platform 等证书/DA 相关工作
+      \item OTA包全量/查量编译等, 积累了UpdateEngine/Bootctl的相关经验
+      \item 工厂模式定制/集成工厂端测试 熟悉Factory init流程
+   \end{itemize}
+\end{itemize}
+}
+
+\subsection{Android 驱动工程师}
+\cventry{2016/9--2017/12}{软件一部}{北京小鸟听听科技有限公司}{}{}{
+\textbf{工作描述：}:
+\begin{itemize}
+   \item 负责 Audio ADC/DAC 驱动
+   \item 负责 Android Recoery 二次开发(UI), 扩展 updater 功能, 实现系统升级 UI 的客制化
+   \item 负责 MIPI/TP 驱动
+\end{itemize}
+\textbf{项目经验:}
+\begin{itemize}
+\item 触屏音箱
+   \begin{itemize}
+      \item 完成 Android 系统 OTA 定制, 扩展了 Recovery OTA 的脚本功能(通过扩展 edify 实现)
+      \item 完成 ADC 驱动适配,DAC 驱动开发(TI)
+      \item 完成 MIPI AMOLED 驱动的适配与调试
+      \item 完成电容触摸屏的驱动适配
+   \end{itemize}
+\end{itemize}
+}
+
+\subsection{Linux 系统工程师}
+\cventry{2014/6--2016/6}{软件部}{太仪(北京)科技有限公司}{}{}{
+\textbf{工作描述：}
+\begin{itemize}
+   \item 负责 FPGA 驱动相关的开发工作
+   \item 基于 Buildroot 构建 Bootloader/Linux Kernel/Ramdisk 整个操作系统
+   \item 使用 libevent/libcurl/libjson-cpp/libconfig,构建应用端的运行框架
+   \item 负责系统软件的整体构建, A/B 升级策略在 linux 系统下的实现
+\end{itemize}
+\textbf{项目经验:}
+\begin{itemize}
+   \item LTE 光纤拉远直放站项目
+   \begin{itemize}
+      \item 基于 Json-RPC-cpp 构建消息 Client -> Server 实现
+      \item 完成 SIM300A GSM 模块的 3G 网络下的数据通信实现
+      \item 解决业务程序在不同设备间的兼容性问题, 实现光模块功率, 状态的监控
+      \item 负责全系统构建问题的解决
+   \end{itemize}
+\end{itemize}
+}
+
+\section{教育经历}
+\cventry{2008/8--2012/07}{本科}{工业工程}{哈尔滨商业大学德强商务学院}{\textit{哈尔滨}}
+{含电子工艺及管理方向}  % arguments 3 to 6 can be left empty
+
+\section{兴趣爱好}
+\cvitem{骑行}{公路骑行}
+\cvitem{电子}{模拟电路等}
+
+\end{document}
