@@ -1,0 +1,105 @@
+@startuml soong_ui.bash
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #OrangeRed
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+participant make
+participant "build/soong/\ncmd/soong_ui/main.go" as soong_ui
+participant "build/soong/\nui/build/build.go" as soong_build
+participant "build/soong/\nui/build/soong.go" as soong
+participant "build/blueprint/\nmicrofactory/microfactory.go" as microfactory
+participant "build/soong/\nui/build/kati.go" as kati
+
+make->soong_ui:soong_ui.bash
+activate soong_ui
+soong_ui->soong_ui:main()
+activate soong_ui
+soong_ui->soong_build:Build()
+deactivate soong_ui
+deactivate soong_ui
+activate soong_build
+soong_build->soong:runSoong()
+activate soong
+soong->soong:exec("build/blueprint/\nbootstrap.bash")
+
+soong->microfactory:Build("build/blueprint/\nbootstrap/minibp")
+soong->microfactory:Build("build/blueprint/\nbootstrap/bpglob")
+soong->soong:[GENERATE]\n(".minibootstrap/build.ninja")
+activate soong
+deactivate soong
+soong->soong:[GENERATE]\n(".bootstrap/build.ninja")
+activate soong
+soong-->soong_build:return
+deactivate soong
+deactivate soong
+soong_build->kati:runKatiBuild()
+activate kati
+kati->kati:runKati("build/make/\ncore/main.mk")
+activate kati
+kati->kaiti:exec("ckati")
+activate kati
+kati-->soong_build:return
+deactivate kati
+deactivate kati
+deactivate kati
+
+soong_build->kati:runKatiPackage()
+activate kati
+kati->kati:runKati("build/make/\npackaging/main.mk")
+activate kati
+kati-->soong_build:return
+deactivate kati
+deactivate kati
+
+soong_build->soong_build:createCombinedBuildNinjaFile()
+activate soong_build
+soong_build->
+deactivate soong_build
+
+deactivate soong_build
+
+@enduml
