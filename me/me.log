@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020) (preloaded format=xelatex 2020.5.21)  10 NOV 2020 07:53
+This is XeTeX, Version 3.14159265-2.6-0.999992 (TeX Live 2020) (preloaded format=xelatex 2020.5.21)  26 NOV 2020 00:54
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -2530,12 +2530,6 @@ Package microtype Info: Character `\textless ' is missing
 Package microtype Info: Character `\textgreater ' is missing
 (microtype)             in font `\TU/FontAwesome(0)/m/n/6'.
 (microtype)             Ignoring protrusion settings for this character.
-
-Underfull \hbox (badness 10000) in paragraph at lines 70--70
-[]\TU/FandolHei(0)/m/sl/10.95 Google WebRTC SDK(Andorid)的集成与二次开发, 完成部分WebRTC在Ap
-p端的界面设计,
- []
-
 Requested font "FandolHei/B/OT:language=dflt;mapping=tex-text;" at 14.4pt
  -> /usr/local/texlive/2020/texmf-dist/fonts/opentype/public/fandol/FandolHei-B
 old.otf
@@ -2566,27 +2560,21 @@ Package microtype Info: Character `\textexclamdown ' is missing
 Package microtype Info: Character `\textquestiondown ' is missing
 (microtype)             in font `\TU/FandolHei(0)/b/n/14.4'.
 (microtype)             Ignoring protrusion settings for this character.
-
-Underfull \hbox (badness 4899) in paragraph at lines 95--95
-[]\TU/FandolHei(0)/m/sl/10.95 熟悉Androiod相机应用Camera 2, Camera的API1/API2, Camera 
-HAL1/HAL3等相关的部分,
- []
-
 [1
 
-] [2]
+]
 
 LaTeX Font Warning: Font shape `TU/FandolHei(0)/m/it' undefined
-(Font)              using `TU/FandolHei(0)/m/sl' instead on input line 161.
+(Font)              using `TU/FandolHei(0)/m/sl' instead on input line 135.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 167.
-[3]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 167.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 141.
+[2]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 141.
  (./me.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 167.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 167.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 141.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 141.
 Package rerunfilecheck Info: File `me.out' has not changed.
-(rerunfilecheck)             Checksum: B9530A333BA163E0AB08E80E96D19BE5;1132.
+(rerunfilecheck)             Checksum: B09A5A45B7ADE2E7D42BB25BB44C0A2D;1003.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
@@ -2595,10 +2583,10 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 Here is how much of TeX's memory you used:
  16830 strings out of 479282
  307447 string characters out of 5880512
- 653004 words of memory out of 5000000
+ 652004 words of memory out of 5000000
  34194 multiletter control sequences out of 15000+600000
  547010 words of font info for 72 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  70i,12n,111p,789b,415s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on me.pdf (3 pages).
+Output written on me.pdf (2 pages).
