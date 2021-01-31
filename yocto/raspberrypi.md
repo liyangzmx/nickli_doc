@@ -51,6 +51,9 @@ IMAGE_INSTALL ?= "${CORE_IMAGE_BASE_INSTALL}"
 inherit image
 ```
 
+**注意:** 对于`FEATURE_PACKAGES_<NAME>`的定义, 当`IMAGE_FEATURES`的设置包含`<NAME>`时, 所有`FEATURE_PACKAGES_<NAME>`中的包将被包含在镜像当中.
+
+
 查看`meta/classes/image.bbclass`:
 ```
 
