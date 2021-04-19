@@ -9,6 +9,7 @@ $ mkdir /opt/gstreamer
 $ cd /opt/gstreamer
 $ git clone https://gitlab.freedesktop.org/gstreamer/cerbero
 $ cd cerbero/
+$ git checkout 1.18
 $ ./cerbero-uninstalled -c config/cross-android-arm64.cbc bootstrap
 
 --- < OUTPUT > ---
