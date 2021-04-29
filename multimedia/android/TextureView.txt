@@ -1,0 +1,83 @@
+ANativeWindow::ANativeWindow_unlockAndPost() ->
+	ANativeWindow::perform() ->
+		Surface::hook_perform() ->
+			Surface::perform() ->
+				Surface::dispatchUnlockAndPost() ->
+					Surface::unlockAndPost() ->
+						Surface::queueBuffer() ->
+							BufferQueueProducer::queueBuffer() ->
+								Fence::push_back()
+								ProxyConsumerListener::onFrameAvailable() ->
+									ConsumerBase::onFrameAvailable() ->
+										ConsumeBase::releaseBufferLocked() ->
+											JNISurfaceTextureContext::onFrameAvailable() ->
+												------------ JNI ------------
+												SurfaceTexture.postEventFromNative()
+													Handler.handleMessage() ->
+														OnFrameAvailableListener.onFrameAvailable() ->
+															TextureView.updateLayer() ->
+																TextureView.updateLayer()
+																TextureView.invalidate()
+
+TextureView.draw() ->
+	RecordingCanvas.drawTextureLayer() ->
+		RecordingCanvas.nDrawTextureLayer() ->
+			------------ JNI ------------
+			android_view_DisplayListCanvas_drawTextureLayer() ->
+				SkiaRecordingCanvas::drawLayer() ->
+					SkCanvas::drawDrawable() ->
+						SkCanvas::onDrawDrawable() ->
+							SkGpuDevice::drawDrawable() ->
+								SkGpuDevice::drawImageQuad() ->
+									SkClipStackDevice::drawDrawable() ->
+										SkBaseDevice::drawDrawable() ->
+											SkDrawable::draw() ->
+												LayerDrawable::DrawLayer() ->
+													LayerDrawable::onDraw() ->
+														SkCanvas::drawImageRect() ->
+															SkCanvas::onDrawImageRect() ->
+																SkGpuDevice::drawImageRect() ->
+																	draw_texture_producer() ->
+																		draw_texture() ->
+																			GrRenderTargetContext::drawTexture()
+																				GrRenderTargetContext::drawTextureQuad()
+																					GrRenderTargetContext::addDrawOp() ->
+																						GrTextureOp::Make() ->
+																							GrOpMemoryPool::alloc()
+																							TextureOp::TextureOp()
+																					AutoCheckFlush::~AutoCheckFlush() ->
+																						GrDrawingManager::flushIfNecessary() ->
+																							GrDrawingManager::flush() ->
+																								GrDrawingManager::executeRenderTasks() ->
+																									GrRenderTask::prepare() ->
+																										GrRenderTask::onPrepare() ->
+																											GrOp::prepare() ->
+																												TextureOp::onPrepare() ->
+																													TextureOp::onPrepareDraws() ->
+																													GrOpFlushState::allocator()
+																													GrOpFlushState::
+																														GrOpFlushState::allocMeshes()
+																														GrOpFlushState::makeVertexSpace()
+																														GrOpFlushState::recordDraw() ->
+																															draw.fGeometryProcessor = gp;
+																															draw.fFixedDynamicState = fixedDynamicState;
+																															draw.fDynamicStateArrays = dynamicStateArrays;
+																															draw.fMeshes = meshes;
+																															draw.fMeshCnt = meshCnt;
+																															draw.fOp = fOpArgs->op();
+																															draw.fPrimitiveType = primitiveType;
+																									GrRenderTask::execute() ->
+																										GrRenderTask::onExecute() ->
+																											GrOp::execute() ->
+																												TextureOp::onExecute() ->
+																													GrOpFlushState::executeDrawsAndUploadsForMeshDrawOp() ->
+																														GrGLOpsRenderPass::drawMeshes() ->
+																															GrGLOpsRenderPass::onDrawMeshes() ->
+																																GrGLGpu::drawMeshes(.., fCurrDraw->fMeshes, ...) ->
+																																	GrGLProgram::bindTextures() ->
+																																		GrGLGpu::bindTexture() ->
+																																			glBindTexture()
+																																	glFlush()
+																																	GrMesh::sendToGpu() ->
+																																		GrGLGpu::sendInstancedMeshToGpu() ->
+																																			glDrawElements()
