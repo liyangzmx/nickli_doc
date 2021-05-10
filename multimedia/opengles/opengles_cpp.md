@@ -18,13 +18,6 @@
 |OpenGL ES 3.0.6 Specification|[es_spec_3.0.pdf](es_spec_3.0.pdf)|
 |OpenGL ES Shading Language 3.00 Specification|[GLSL_ES_Specification_3.00.pdf](GLSL_ES_Specification_3.00.pdf)|
 
-## Android OpenGL ES(Java)
-你需要特别注意Android下的OpenGL ES的API版本问题:  
-[图片和图形 - OpenGL ES](https://developer.android.com/training/graphics/opengl)  
-
-你也可以从如下文档中获得一些**Java**层的API指导:  
-[使用 OpenGL ES 显示图形](https://developer.android.com/training/graphics/opengl)
-
 ## Android OpenGL ES(NDK)
 
 ### NDK
