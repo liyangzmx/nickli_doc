@@ -1,0 +1,212 @@
+@startuml WebRTC_Receiver_Video
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box VideoSink
+participant SurfaceViewRenderer
+participant ProxyVideoSink
+participant VideoSinkWrapper
+end box
+
+box VideoDecoder
+participant "VideoBroadcaster" as RVideoBroadcaster
+participant WebRtcVideoReceiveStream
+participant IncomingVideoStream
+participant VideoStreamDecoder
+participant VCMDecodedFrameCallback
+participant "VideoDecoder.Callback" as VideoDecoderCallback
+participant AndroidVideoDecoder
+participant VideoDecoderWrapper
+participant VideoDecoderSoftwareFallbackWrapper
+participant VCMGenericDecoder
+end box
+
+box VideoReceiver
+participant VideoReceiver2
+participant VideoReceiveStream
+participant FrameBuffer
+participant "RtpVideoStreamReceiver" as RtpVideoStreamReceiver
+end box
+
+box RTPReceiver
+participant "RtpDemuxer" as RtpDemuxer
+participant "RtpStreamReceiverController" as RtpStreamReceiverController
+participant "[webrtc::Call]\ninternal::Call" as Call
+end box
+
+box Tranceiver
+participant "[Transport]\n[MediaChannel]\nWebRtcVideoChannel" as WebRtcVideoChannel
+participant "[NetworkInterface]\n[BaseChannel]\nVideoChannel" as VideoChannel
+participant "[RtpTransportInternal]\n[RtpTransport]\n[SrtpTransport]\nDtlsSrtpTransport" as DtlsSrtpTransport
+end box
+
+box DTLS
+participant "webrtc::DtlsTransport" as DtlsTransport
+participant "[PacketTransportInternal]\nP2PTransportChannel" as P2PTransportChannel
+participant "ProxyConnection" as ProxyConnection
+participant "UDPPort" as UDPPort
+participant "AllocationSequence" as AllocationSequence
+participant "AsyncUDPSocket" as AsyncUDPSocket
+participant "PhysicalSocket" as PhysicalSocket
+
+end box
+
+=== Receive RTP ===
+
+AsyncUDPSocket<-:OnReadEvent()
+activate AsyncUDPSocket
+create PhysicalSocket
+AsyncUDPSocket->PhysicalSocket:RecvFrom()
+activate PhysicalSocket
+PhysicalSocket->PhysicalSocket:::recvfrom()
+activate PhysicalSocket
+deactivate PhysicalSocket
+deactivate PhysicalSocket
+
+create AllocationSequence
+AsyncUDPSocket-->AllocationSequence:OnReadEvent()
+note left:**SignalReadEvent**
+deactivate AsyncUDPSocket
+create UDPPort
+AllocationSequence->UDPPort:HandleIncomingPacket()
+create ProxyConnection
+UDPPort->ProxyConnection:OnReadPacket()
+create P2PTransportChannel
+ProxyConnection->P2PTransportChannel:OnReadPacket()
+create DtlsTransport
+P2PTransportChannel->DtlsTransport:OnReadPacket()
+create DtlsSrtpTransport
+DtlsTransport->DtlsSrtpTransport:RtpTransport::OnReadPacket()
+activate DtlsSrtpTransport
+DtlsSrtpTransport->DtlsSrtpTransport:SrtpTransport::OnRtcpPacketReceived()
+activate DtlsSrtpTransport
+create RtpDemuxer
+DtlsSrtpTransport->RtpDemuxer:OnRtpPacket()
+deactivate DtlsSrtpTransport
+deactivate DtlsSrtpTransport
+activate RtpDemuxer
+
+=== Receive Video ==
+create VideoChannel
+RtpDemuxer->VideoChannel:OnRtpPacket()
+create WebRtcVideoChannel
+VideoChannel->WebRtcVideoChannel:OnPacketReceived()
+create Call
+WebRtcVideoChannel->Call:DeliverPacket()
+create RtpStreamReceiverController
+Call->RtpStreamReceiverController:OnRtpPacket()
+RtpStreamReceiverController->RtpDemuxer:OnRtpPacket()
+' activate RtpDemuxer
+create RtpVideoStreamReceiver
+RtpDemuxer->RtpVideoStreamReceiver:OnRtpPacket()
+activate RtpVideoStreamReceiver
+RtpVideoStreamReceiver->RtpVideoStreamReceiver:ReceivePacket()
+activate RtpVideoStreamReceiver
+RtpVideoStreamReceiver->RtpVideoStreamReceiver:OnReceivedPayloadData()
+activate RtpVideoStreamReceiver
+RtpVideoStreamReceiver->RtpVideoStreamReceiver:OnAssembledFrame()
+activate RtpVideoStreamReceiver
+RtpVideoStreamReceiver->RtpVideoStreamReceiver:OnInsertedPacket()
+activate RtpVideoStreamReceiver
+create VideoReceiveStream
+RtpVideoStreamReceiver->VideoReceiveStream:OnCompleteFrame()
+deactivate RtpVideoStreamReceiver
+deactivate RtpVideoStreamReceiver
+deactivate RtpVideoStreamReceiver
+deactivate RtpVideoStreamReceiver
+deactivate RtpVideoStreamReceiver
+create FrameBuffer
+VideoReceiveStream->FrameBuffer:InsertFrame()
+
+note over VideoReceiveStream:**RESUME**
+->VideoReceiveStream:StartNextDecode()
+activate VideoReceiveStream
+VideoReceiveStream->VideoReceiveStream:HandleEncodedFrame()
+activate VideoReceiveStream
+create VideoReceiver2
+VideoReceiveStream->VideoReceiver2:Decode()
+deactivate VideoReceiveStream
+deactivate VideoReceiveStream
+deactivate VideoReceiveStream
+
+create VCMGenericDecoder
+VideoReceiver2->VCMGenericDecoder:Decode()
+create VideoDecoderSoftwareFallbackWrapper
+VCMGenericDecoder->VideoDecoderSoftwareFallbackWrapper:Decode()
+create VideoDecoderWrapper
+VideoDecoderSoftwareFallbackWrapper->VideoDecoderWrapper:Decode()
+create AndroidVideoDecoder
+VideoDecoderWrapper->AndroidVideoDecoder:onFrame()
+create VideoDecoderCallback
+AndroidVideoDecoder->VideoDecoderCallback:onDecodedFrame()
+VideoDecoderCallback->VideoDecoderWrapper:OnDecodedFrame()
+create VCMDecodedFrameCallback
+VideoDecoderWrapper->VCMDecodedFrameCallback:Decoded()
+create VideoStreamDecoder
+VCMDecodedFrameCallback->VideoStreamDecoder:FrameToRender()
+create IncomingVideoStream
+VideoStreamDecoder->IncomingVideoStream:Dequeue()
+activate IncomingVideoStream
+IncomingVideoStream->IncomingVideoStream:OnFrame()
+activate IncomingVideoStream
+IncomingVideoStream->VideoReceiveStream:OnFrame()
+deactivate IncomingVideoStream
+deactivate IncomingVideoStream
+
+create WebRtcVideoReceiveStream
+VideoReceiveStream->WebRtcVideoReceiveStream:OnFrame()
+create RVideoBroadcaster
+WebRtcVideoReceiveStream->RVideoBroadcaster:OnFrame()
+create VideoSinkWrapper
+RVideoBroadcaster->VideoSinkWrapper:OnFrame()
+create ProxyVideoSink
+VideoSinkWrapper->ProxyVideoSink:onFrame()
+create SurfaceViewRenderer
+ProxyVideoSink->SurfaceViewRenderer:onFrame()
+
+@enduml
