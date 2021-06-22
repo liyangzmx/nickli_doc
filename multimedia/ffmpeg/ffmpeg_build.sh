@@ -1,18 +1,11 @@
 #!/bin/bash
 
 # libuse
-USE_X264=0
-USE_FDK_AAC=0
-USE_OPENSSL=0
+USE_X264=1
+USE_FDK_AAC=1
+USE_OPENSSL=1
 
 CLEAN_BEFORE=0
-
-echo "FFmpeg Build Start..."
-FFMPEG_VERSION=4.2.2
-FFMPEG_NAME=ffmpeg-${FFMPEG_VERSION}
-# http://ffmpeg.org/releases/ffmpeg-4.3.1.tar.bz2
-FFMPEG_OFFICIAL_SITE=http://ffmpeg.org/releases
-FFMPEG_DOWNLOAD_URL=$FFMPEG_OFFICIAL_SITE/${FFMPEG_NAME}.tar.bz2
 DOWNLOAD_DIR=dl/
 
 download() {
@@ -25,19 +18,6 @@ download() {
     popd
 }
 
-echo "${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2"
-
-echo "FFmpeg Version: ${FFMPEG_VERSION}"
-if [ ! -f ${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2 ]; then
-    echo "Downloading ${FFMPEG_NAME}"
-    download ${FFMPEG_DOWNLOAD_URL}
-fi
-
-if [ ! -d ${FFMPEG_NAME} ]; then
-    echo "Uncopressing ${FFMPEG_NAME}.tar.gz ..."
-    tar xvf ${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2
-fi
-
 NDK=~/Android/Sdk/ndk/21.3.6528147
 HOST_TAG=linux-x86_64
 TOOLCHAINS=$NDK/toolchains/llvm/prebuilt/$HOST_TAG
@@ -47,7 +27,7 @@ ARCH="aarch64"
 CROSS_PREFIX=$ARCH-linux-android
 APP_ABI=arm64-v8a
 CORES=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || sysctl -n hw.ncpu)
-PREFIX=${PWD}/android-build/
+PREFIX=${PWD}/android-build
 
 echo "Cleaning output..."
 if [ -d android-build ]; then
@@ -87,7 +67,7 @@ build_x264()
     CC=${TOOLCHAINS}/bin/${CROSS_PREFIX}${API}-clang ./configure \
         --enable-pic \
         --disable-asm \
-        --enable-shared \
+        --enable-static \
         --disable-opencl \
         --disable-cli \
         --host=${ARCH}-linux \
@@ -102,9 +82,10 @@ build_x264()
     make -j${CORES}
     make install
     rm -rf ${PREFIX}/libs/${APP_ABI}/pkgconfig
-    X264_SO_PATH=`readlink ${PREFIX}/libs/${APP_ABI}/libx264.so`
-    rm  ${PREFIX}/libs/${APP_ABI}/libx264.so
-    mv ${PREFIX}/libs/${APP_ABI}/${X264_SO_PATH} ${PREFIX}/libs/${APP_ABI}/libx264.so
+    # X264_SO_PATH=`readlink ${PREFIX}/libs/${APP_ABI}/libx264.so`
+    # rm ${PREFIX}/libs/${APP_ABI}/libx264.a
+    # mv ${PREFIX}/libs/${APP_ABI}/${X264_SO_PATH} ${PREFIX}/libs/${APP_ABI}/libx264.a
+    rm ${PREFIX}/libs/${APP_ABI}/libx264.so
     rm ${PREFIX}/libs/${APP_ABI}/${X264_SO_PATH}
     popd
 }
@@ -142,7 +123,8 @@ build_fdk_aac()
     STRIP=${TOOLCHAINS}/bin/${CROSS_PREFIX}-strip; \
     ./configure \
         --prefix=${PREFIX} \
-        --enable-shared \
+        --disable-shared \
+        --enable-static \
         --host=aarch64-linux \
         --with-sysroot=${SYSROOT} \
         --libdir=${PREFIX}/libs/${APP_ABI} \
@@ -154,13 +136,16 @@ build_fdk_aac()
     fi
 	make -j${CORES}
 	make install
-    rm -rf ${PREFIX}/libs/${APP_ABI}/pkgconfig
-    rm -rf ${PREFIX}/libs/${APP_ABI}/libfdk-aac.a
+    # rm -rf ${PREFIX}/libs/${APP_ABI}/pkgconfig
+    rm -rf ${PREFIX}/libs/${APP_ABI}/libfdk-aac.so*
     rm -rf ${PREFIX}/libs/${APP_ABI}/libfdk-aac.la
-    FDK_AAC_SO_PATH=`readlink ${PREFIX}/libs/${APP_ABI}/libfdk-aac.so`
-    mv ${PREFIX}/libs/${APP_ABI}/${FDK_AAC_SO_PATH} ${PREFIX}/libs/${APP_ABI}/__${FDK_AAC_SO_PATH} 
-    rm ${PREFIX}/libs/${APP_ABI}/libfdk-aac.so*
-    mv ${PREFIX}/libs/${APP_ABI}/__${FDK_AAC_SO_PATH} ${PREFIX}/libs/${APP_ABI}/libfdk-aac.so
+    # rm -rf ${PREFIX}/libs/${APP_ABI}/libfdk-aac.a
+    # rm -rf ${PREFIX}/libs/${APP_ABI}/libfdk-aac.la
+    # FDK_AAC_SO_PATH=`readlink ${PREFIX}/libs/${APP_ABI}/libfdk-aac.so`
+    # mv ${PREFIX}/libs/${APP_ABI}/${FDK_AAC_SO_PATH} ${PREFIX}/libs/${APP_ABI}/__${FDK_AAC_SO_PATH} 
+    # rm ${PREFIX}/libs/${APP_ABI}/libfdk-aac.so*
+    # mv ${PREFIX}/libs/${APP_ABI}/__${FDK_AAC_SO_PATH} ${PREFIX}/libs/${APP_ABI}/libfdk-aac.so
+    # mv ${PREFIX}/libs/${APP_ABI}/libfdk-aac.a ${PREFIX}/libs/${APP_ABI}/libfdk_aac.a
     popd
 }
 
@@ -182,24 +167,46 @@ build_openssl()
 
     pushd ${OPENSSL_NAME}
     
-    ANDROID_NDK_HOME=${NDK}; \
-    PATH=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:${PATH}; \
-    ./Configure android-arm64 -D__ANDROID_API__=23 no-tests shared --prefix=${PREFIX};\
+    export ANDROID_NDK_HOME=${NDK}
+    export PATH=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin:${PATH}
+    ./Configure android-arm64 -D__ANDROID_API__=23 no-tests shared --prefix=${PREFIX}
     echo "PATH: ${PATH}"
 
     make -j8
     # install
-    cp libssl.so.1.1 ${PREFIX}/libs/${APP_ABI}/libssl.so
-    cp libcrypto.so.1.1 ${PREFIX}/libs/${APP_ABI}/libcrypto.so
-    cp libssl.so.1.1 ${PREFIX}/libs/${APP_ABI}/libssl.so
-    cp libcrypto.so.1.1 ${PREFIX}/libs${APP_ABI}/libcrypto.so
+    # cp libssl.so.1.1 ${PREFIX}/libs/${APP_ABI}/libssl.so
+    # cp libcrypto.so.1.1 ${PREFIX}/libs/${APP_ABI}/libcrypto.so
+    # cp libssl.so.1.1 ${PREFIX}/libs/${APP_ABI}/libssl.so
+    # cp libcrypto.so.1.1 ${PREFIX}/libs${APP_ABI}/libcrypto.so
+    cp libssl.a ${PREFIX}/libs/${APP_ABI}/libssl.a
+    cp libcrypto.a ${PREFIX}/libs/${APP_ABI}/libcrypto.a
     cp -r include/* ${PREFIX}/include
     # make install
+    
     popd
 }
 
 build_ffmpeg()
 {
+    echo "FFmpeg Build Start..."
+    FFMPEG_VERSION=4.2.2
+    FFMPEG_NAME=ffmpeg-${FFMPEG_VERSION}
+    # http://ffmpeg.org/releases/ffmpeg-4.3.1.tar.bz2
+    FFMPEG_OFFICIAL_SITE=http://ffmpeg.org/releases
+    FFMPEG_DOWNLOAD_URL=$FFMPEG_OFFICIAL_SITE/${FFMPEG_NAME}.tar.bz2
+
+    echo "${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2"
+
+    echo "FFmpeg Version: ${FFMPEG_VERSION}"
+    if [ ! -f ${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2 ]; then
+        echo "Downloading ${FFMPEG_NAME}"
+        download ${FFMPEG_DOWNLOAD_URL}
+    fi
+
+    if [ ! -d ${FFMPEG_NAME} ]; then
+        echo "Uncopressing ${FFMPEG_NAME}.tar.gz ..."
+        tar xvf ${DOWNLOAD_DIR}${FFMPEG_NAME}.tar.bz2
+    fi
     echo "Build FFmpeg..."
     EXTRA_OPTIONS=
     if [ "X_${USE_X264}" == "X_1" ]; then
@@ -217,6 +224,10 @@ build_ffmpeg()
     if [ "X_${USE_OPENSSL}" == "X_1" ]; then
         EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-openssl"
         build_openssl
+    fi
+    if [ "X_${USE_LIBRTMP}" == "X_1" ]; then
+        EXTRA_OPTIONS="${EXTRA_OPTIONS} --enable-librtmp"
+        build_librtmp
     fi
     # FFmpeg build
     CONFIG_LOG_PATH=${PREFIX}/
@@ -317,8 +328,8 @@ build_tiny_ffmpeg()
         --nm=${TOOLCHAINS}/bin/${CROSS_PREFIX}-nm \
         --strip=${TOOLCHAINS}/bin/${CROSS_PREFIX}-strip \
         --target-os=android \
-        --disable-static \
-        --enable-shared \
+        --enable-static \
+        --disable-shared \
         --enable-protocols \
         --enable-cross-compile \
         --enable-optimizations \
@@ -401,4 +412,4 @@ build_librtmp()
     popd
 }
 
-build_librtmp
+build_ffmpeg

@@ -1,0 +1,187 @@
+@startuml WebRTC_Video_Send
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box VideoCapture
+participant "CameraSession.Events" as Events
+participant "[CameraCapturer]\nCamera2Capturer" as Camera2Capturer
+participant "[MediaSource]\nVideoSource" as VideoSource
+participant "[AdaptedVideoTrackSource]\nAndroidVideoTrackSource" as AndroidVideoTrackSource
+participant "[VideoSourceBase]\nVideoBroadcaster" as VideoBroadcaster
+end box
+
+box VideoEncoder
+participant "VideoEncoder.Callback" as VideoEncoderCallback
+participant "HardwareVideoEncoder" as HardwareVideoEncoder
+participant "VideoEncoderWrapper" as VideoEncoderWrapper
+participant VideoBroadcaster
+end box
+
+box VideoSender
+participant "[EncodedImageCallback]\nVideoStreamEncoder" as VideoStreamEncoder
+participant "[EncoderSink]VideoSendStreamImpl" as VideoSendStreamImpl
+participant "[RtpVideoSenderInterface]\nRtpVideoSender" as RtpVideoSender
+participant "[ProcessThread]\nProcessThreadImpl" as ProcessThreadImpl
+end box
+
+box RTPSender
+participant "[RtpRtcp]\nModuleRtpRtcpImpl" as ModuleRtpRtcpImpl
+participant "[RtpRtcp]\nRtpSenderEgress" as RtpSenderEgress
+end box
+
+box Tranceiver
+participant "[Transport]\n[MediaChannel]\nWebRtcVideoChannel" as WebRtcVideoChannel
+participant "[NetworkInterface]\n[BaseChannel]\nVideoChannel" as VideoChannel
+participant "[RtpTransportInternal]\n[RtpTransport]\n[SrtpTransport]\nDtlsSrtpTransport" as DtlsSrtpTransport
+end box
+
+box DTLS
+participant "webrtc::DtlsTransport" as DtlsTransport
+participant "[PacketTransportInternal]\nP2PTransportChannel" as P2PTransportChannel
+participant "ProxyConnection" as ProxyConnection
+participant "UDPPort" as UDPPort
+participant "AllocationSequence" as AllocationSequence
+participant "AsyncUDPSocket" as AsyncUDPSocket
+participant "PhysicalSocket" as PhysicalSocket
+
+end box
+
+=== THREAD ==
+
+ProcessThreadImpl->ProcessThreadImpl:Process()
+activate ProcessThreadImpl
+note over ProcessThreadImpl:**WAITING Packet...**
+
+=== Video Send ==
+
+->Events:onFrameCaptured()
+create Camera2Capturer
+Events->Camera2Capturer:createCameraSession()
+create VideoSource
+Camera2Capturer->VideoSource:onFrameCaptured()
+create AndroidVideoTrackSource
+VideoSource->AndroidVideoTrackSource:OnFrameCaptured()
+create VideoBroadcaster
+AndroidVideoTrackSource->VideoBroadcaster:OnFrame()
+create VideoStreamEncoder
+VideoBroadcaster->VideoStreamEncoder:OnFrame()
+create VideoEncoderWrapper
+VideoStreamEncoder->VideoEncoderWrapper:Encode()
+create HardwareVideoEncoder
+VideoEncoderWrapper->HardwareVideoEncoder:encode()
+create VideoEncoderCallback
+HardwareVideoEncoder->VideoEncoderCallback:onEncodedFrame()
+VideoEncoderCallback->VideoEncoderWrapper:OnEncodedFrame()
+VideoEncoderWrapper->VideoStreamEncoder:OnEncodedImage()
+create VideoSendStreamImpl
+VideoStreamEncoder->VideoSendStreamImpl:OnEncodedImage()
+VideoSendStreamImpl->RtpVideoSender:OnEncodedImage()
+
+RtpVideoSender-->ProcessThreadImpl:**POST SIGNAL**
+
+note over ProcessThreadImpl:**RESUME**
+create ModuleRtpRtcpImpl
+ProcessThreadImpl->ModuleRtpRtcpImpl:OnSendingRtpFrame()
+deactivate ProcessThreadImpl
+activate ModuleRtpRtcpImpl
+ModuleRtpRtcpImpl->ModuleRtpRtcpImpl:TrySendPacket()
+activate ModuleRtpRtcpImpl
+create RtpSenderEgress
+ModuleRtpRtcpImpl->RtpSenderEgress:SendPacket()
+deactivate ModuleRtpRtcpImpl
+deactivate ModuleRtpRtcpImpl
+activate RtpSenderEgress
+' RtpSenderEgress->RtpSenderEgress:SendPacketToNetwork()
+' activate RtpSenderEgress
+' RtpSenderEgress->WebRtcVideoChannel:SendRtp()
+' deactivate RtpSenderEgress
+' deactivate RtpSenderEgress
+
+=== Send RTP ===
+
+create WebRtcVideoChannel
+RtpSenderEgress->WebRtcVideoChannel:SendRtp()
+deactivate RtpSenderEgress
+deactivate RtpSenderEgress
+
+' ModuleRtpRtcpImpl->WebRtcVideoChannel:SendRtp()
+activate WebRtcVideoChannel
+WebRtcVideoChannel->WebRtcVideoChannel:MediaChannel::SendRtp()
+activate WebRtcVideoChannel
+WebRtcVideoChannel->WebRtcVideoChannel:MediaChannel::DoSendPacket()
+activate WebRtcVideoChannel
+create VideoChannel
+WebRtcVideoChannel->VideoChannel:SendPacket()
+deactivate WebRtcVideoChannel
+deactivate WebRtcVideoChannel
+deactivate WebRtcVideoChannel
+
+create DtlsSrtpTransport
+VideoChannel->DtlsSrtpTransport:SendRtpPacket()
+create DtlsTransport
+DtlsSrtpTransport->DtlsTransport:SendPacket()
+create P2PTransportChannel
+DtlsTransport->P2PTransportChannel:SendPacket()
+create ProxyConnection
+P2PTransportChannel->ProxyConnection:Send()
+create UDPPort
+ProxyConnection->UDPPort:SendTo()
+create AsyncUDPSocket
+UDPPort->AsyncUDPSocket:SendTo()
+create PhysicalSocket
+AsyncUDPSocket->PhysicalSocket:SendTo()
+activate PhysicalSocket
+PhysicalSocket->PhysicalSocket:DoSendTo()
+activate PhysicalSocket
+PhysicalSocket->:::sendto()
+activate PhysicalSocket
+deactivate PhysicalSocket
+deactivate PhysicalSocket
+deactivate PhysicalSocket
+
+@enduml
