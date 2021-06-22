@@ -77,31 +77,31 @@ EGLConfig属性
 |**EGL_LUMINANCE_SIZE**|颜色缓冲区中亮度位数|0|
 |**EGL_ALPHA_SIZE**|颜色缓冲区中Alpha值位数|0|
 |**EGL_ALPHA_MASK_SIZE**|掩码缓冲区中Alpha掩码位数|0|
-|**EGL_BIND_TO_TEXTURE_RGB**|如果可以绑定到RGB纹理, 则为真|EGL_DONT_CARE|
-|**EGL_BIND_TO_TEXTURE_ARGB**|如果可以绑定到ARGB纹理, 则为真|EGL_DONT_CARE|
-|**EGL_COLOR_BUFFER_TYPE**|颜色缓冲区类型:EGL_RGB_BUFFER或EGL_LUMINANCE_BUFFER|EGL_RGB_BUFFER
-|**EGL_CONFIG_CAVEAT**|和配置相关的任何注意事项|EGL_DONT_CARE|
-|**EGL_CONFIG_ID**|唯一的EGLConfig标识值|EGL_DONT_CARE|
+|**EGL_BIND_TO_TEXTURE_RGB**|如果可以绑定到RGB纹理, 则为真|`EGL_DONT_CARE`|
+|**EGL_BIND_TO_TEXTURE_ARGB**|如果可以绑定到ARGB纹理, 则为真|`EGL_DONT_CARE`|
+|**EGL_COLOR_BUFFER_TYPE**|颜色缓冲区类型:EGL_RGB_BUFFER或EGL_LUMINANCE_BUFFER|`EGL_RGB_BUFFER`
+|**EGL_CONFIG_CAVEAT**|和配置相关的任何注意事项|`EGL_DONT_CARE`|
+|**EGL_CONFIG_ID**|唯一的EGLConfig标识值|`EGL_DONT_CARE`|
 |**EGL_CONFORMANT**|如果用这个EGLConfig创建的上下文兼容, 则为真|-
 |**EGL_DEPTH_SIZE**|深度缓冲区位数|0|
 |**EGL_LEVEL**|帧缓冲级别|0|
 |**EGL_MAX_PBUFFER_WIDTH**|用这个EGLConfig创建的PBuffer的最大宽度|-
 |**EGL_MAX_PBUFFER_HEIGHT**|用这个EGLConfig创建的PBuffer的最大高度|-
 |**EGL_MAX_PBUFFER_PIXELS**|用这个EGLConfig创建的PBuffer的最大尺寸|-
-|**EGL_MAX_SWAP_INTERNAL**|最大缓冲区交换间隔|EGL_DONT_CARE
-|**EGL_MIN_SWAP_INTERNAL**|最小缓冲区交换间隔|EGL_DONT_CARE
+|**EGL_MAX_SWAP_INTERNAL**|最大缓冲区交换间隔|`EGL_DONT_CARE`
+|**EGL_MIN_SWAP_INTERNAL**|最小缓冲区交换间隔|`EGL_DONT_CARE`
 |**EGL_NATIVE_RENDERABLE**|如果原生渲染库可以渲染到用EGLConfig创建的表面则为真
-|**EGL_NATIVE_VISUAL_ID**|关于应原生窗口系统可视ID句柄|EGL_DONT_CARE
-|**EGL_NATIVE_VISUAL_TYPE**|关于应原生窗口系统可视类型|EGL_DONT_CARE
-|**EGL_RENDERABLE_TYPE**|由EGL_OPENGL_ESBIT, EGL_OPENGL_ES2_BIG, EGL_OPENGL_ES3_BIT_KHR(需要EGL_KHR_create_context扩展), EGL_OPENGL_BIT或EGL_OPENVG_BIT组成的掩码, 代表配置支持的渲染接口|EGL_OPENGL_ES_BIT|
+|**EGL_NATIVE_VISUAL_ID**|关于应原生窗口系统可视ID句柄|`EGL_DONT_CARE`
+|**EGL_NATIVE_VISUAL_TYPE**|关于应原生窗口系统可视类型|`EGL_DONT_CARE`
+|**EGL_RENDERABLE_TYPE**|由<br>`EGL_OPENGL_ESBIT`<br>`EGL_OPENGL_ES2_BIG`<br>`EGL_OPENGL_ES3_BIT_KHR(需要EGL_KHR_create_context扩展)`<br>`EGL_OPENGL_BIT`<br>`EGL_OPENVG_BIT`<br>组成的掩码, 代表配置支持的渲染接口|`EGL_OPENGL_ES_BIT`|
 |**EGL_SAMPLE_BUFFERS**|可用多重采样缓冲区数量|0|
 |**EGL_SAMPLES**|每个像素的样本数量|0|
 |**EGL_STENCIL_SIZE**|模板缓冲区位数|0|
-|**EGL_SURFACE_TYPE**|支持的EGL表面类型, 可能是EGL_WINDOW_BIT, EGL_PIXMAP_BIT, EGL_PBUFFER_BIT, EGL_MULTISAMPLE_RESOVE_BOX_BIT, EGL_SWAP_BEHAVIOR_PRESERVED_BIT, EGL_VG_COLORSPACE_LINEAR_BIT或者EGL_VG_ALPHA_FORMAT_PRE_BIT|EGL_WINDOW_BIT|
-|**EGL_TRANSPARENT_TYPE**|支持的透明度|EGL_NONE|
-|**EGL_TRANSPARENT_RED_VALUE**|解读为透明的红色值|EGL_DONT_CARE|
-|**EGL_TRANSPARENT_GREEN_VALUE**|解读为透明的绿色值|EGL_DONT_CARE|
-|**EGL_TRANSPARENT_BLUE_VALUE**|解读为透明的蓝色值|EGL_DONT_CARE|
+|**EGL_SURFACE_TYPE**|支持的EGL表面类型, 可能是EGL_WINDOW_BIT<br>EGL_PIXMAP_BIT<br>EGL_PBUFFER_BIT<br>EGL_MULTISAMPLE_RESOVE_BOX_BIT<br>EGL_SWAP_BEHAVIOR_PRESERVED_BIT<br>EGL_VG_COLORSPACE_LINEAR_BIT<br>EGL_VG_ALPHA_FORMAT_PRE_BIT|`EGL_WINDOW_BIT`|
+|**EGL_TRANSPARENT_TYPE**|支持的透明度|`EGL_NONE`|
+|**EGL_TRANSPARENT_RED_VALUE**|解读为透明的红色值|`EGL_DONT_CARE`|
+|**EGL_TRANSPARENT_GREEN_VALUE**|解读为透明的绿色值|`EGL_DONT_CARE`|
+|**EGL_TRANSPARENT_BLUE_VALUE**|解读为透明的蓝色值|`EGL_DONT_CARE`|
 
 ---
 ### 让EGL选择配置
@@ -165,10 +165,10 @@ EGL像素缓冲区属性:
 |:-|:-|:-|
 |**EGL_WIDTH**|指定Pbuffer的宽度|0|
 |**EGL_HEIGHT**|指定Pbuffer的高度|0|
-|**EGL_LARGEST_PBUFFER**|如果请求的大小不可用, 选择最大的可用pbuffer. 有效值为: EGL_TRUE和EGL_FALSE|EGL_FALSE|
-|**EGL_TEXTURE_FORMAT**|如果pbuffer绑定到一个纹理贴图, 则制定纹理格式类型, 有效值是: EGL_TEXTURE_RGB, EGL_TEXTURE_RGBA, 和EGL_NO_TEXTURE(表示pbuffer不能直接用于纹理)|EGL_NO_TEXTURE|
-|**EGL_TEXTURE_TARGET**|制定pbuffer作为纹理贴图时应该廉洁到的相关纹理目标, 有效值为EGL_TEXTURE_2D和EGL_NO_TEXTURE|EGL_NO_TEXTURE|
-|**EGL_MIPMAP_TEXTURE**|指定是否应该另外为纹理mipmap级别, 分配存储. 有效值是: EGL_TRUE和EGL_FALS|EGL_FALSE|
+|**EGL_LARGEST_PBUFFER**|如果请求的大小不可用, 选择最大的可用pbuffer. 有效值为: EGL_TRUE和EGL_FALSE|`EGL_FALSE`|
+|**EGL_TEXTURE_FORMAT**|如果pbuffer绑定到一个纹理贴图, 则制定纹理格式类型, 有效值是: EGL_TEXTURE_RGB, EGL_TEXTURE_RGBA, 和EGL_NO_TEXTURE(表示pbuffer不能直接用于纹理)|`EGL_NO_TEXTURE`|
+|**EGL_TEXTURE_TARGET**|制定pbuffer作为纹理贴图时应该廉洁到的相关纹理目标, 有效值为EGL_TEXTURE_2D和EGL_NO_TEXTURE|`EGL_NO_TEXTURE`|
+|**EGL_MIPMAP_TEXTURE**|指定是否应该另外为纹理mipmap级别, 分配存储. 有效值是: EGL_TRUE和EGL_FALS|`EGL_FALSE`|
 
 `eglChooseConfig()`的`attribList`举例:
 ```
@@ -201,7 +201,7 @@ EGLint attribList[] = {
 |**display**|指定EGL的显示连接
 |**config**|指定配置|
 |**shareContext**|允许多个EGL上下文共享特定类型的数据, 例如着色器程序和纹理贴图; 使用EGL_NO_CONTEXT表示没有共享
-|**attribList**|指定创建上下文使用的属性列表; 只有一个可接受的属性: EGL_CONTEXT_CLIENT_VERSION|
+|**attribList**|指定创建上下文使用的属性列表; 只有一个可接受的属性: `EGL_CONTEXT_CLIENT_VERSION`|
 
 用`eglCreateContext()`创建上下文时的属性: 
 |标志|描述|默认值|
@@ -395,9 +395,198 @@ GLuint LoadShader(GLenum type, const char *shaderSrc) {
 `void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name)`  
 |参数|说明|
 |:-|:-|
-|program|程序对象的句柄|
-|index|查询的统一变量索引|
-|bufSize|名称数组中的字符数字|
-|length|如果不是NULL, 则是名称数组中写入的字符数(不含null终止符)|
-|size|如果查询的统一变量是个数组, 这个变量将写入程序中使用的最大数组元素(加1); 如果查询的统一变量不是数组, 则该值为1|
-|type|将写入统一变量的类型, 可以为:`GL_FLOAT`<br>`GL_FLOAT_VEC2`<br>`GL_FLOAT_VEC3`<br>`GL_FLOAT_VEC4`<br>`GL_INT`<br>`GL_INT_VEC2`<br>`GL_INT_VEC3`<br>`GL_INT_VEC4`<br>`GL_USIGNED_INT`<br>`GL_USIGNED_INT_VEC2`<br>`GL_USIGNED_INT_VEC3`<br>`GL_USIGNED_INT_VEC4`<br>`GL_BOOL`<br>`GL_BOOL_VEC2`<br>`GL_BOOL_VEC3`<br>`GL_BOOL_VEC4`<br>`GL_FLOAT_MAT2`<br>`GL_FLOAT_MAT3`<br>`GL_FLOAT_MAT4`<br>`GL_FLOAT_MAT2x3`<br>`GL_FLOAT_MAT2x4`<br>`GL_FLOAT_MAT3x2`<br>`GL_FLOAT_MAT3x4`<br>`GL_FLOAT_MAT4x2`<br>`GL_FLOAT_MAT4x3`<br>`GL_SAMPLER_2D`<br>`GL_SAMPLER_3D`<br>`GL_SAMPLER_CUBE`<br>`GL_SAMPLER_SHADOW`<br>`GL_SAMPLER_2D_ARRAY`<br>`GL_SAMPLER_ARRAY_SHADOW`<br>`GL_SAMPLER_CUBE_SHADOW`<br>`GL_INT_SAMPLER_2D`<br>`GL_INT_SAMPLER_3D`<br>`GL_INT_SAMPLER_CUBE`<br>`GL_INT_SAMPLER_2D_ARRAY`<br>`GL_UNSIGNED_INT_SAMPLER_2D`<br>`GL_UNSIGNED_INT_SAMPLER_3D`<br>`GL_UNSIGNED_INT_SAMPLER_CUBE`<br>`GL_UNSIGNED_INT_SAMPLER_2D_ARRAY`|
+|**program**|程序对象的句柄|
+|**index**|查询的统一变量索引|
+|**bufSize**|名称数组中的字符数字|
+|**length**|如果不是NULL, 则是名称数组中写入的字符数(不含null终止符)|
+|**size**|如果查询的统一变量是个数组, 这个变量将写入程序中使用的最大数组元素(加1); 如果查询的统一变量不是数组, 则该值为1|
+|**type**|将写入统一变量的类型, 可以为:`GL_FLOAT`<br>`GL_FLOAT_VEC2`<br>`GL_FLOAT_VEC3`<br>`GL_FLOAT_VEC4`<br>`GL_INT`<br>`GL_INT_VEC2`<br>`GL_INT_VEC3`<br>`GL_INT_VEC4`<br>`GL_USIGNED_INT`<br>`GL_USIGNED_INT_VEC2`<br>`GL_USIGNED_INT_VEC3`<br>`GL_USIGNED_INT_VEC4`<br>`GL_BOOL`<br>`GL_BOOL_VEC2`<br>`GL_BOOL_VEC3`<br>`GL_BOOL_VEC4`<br>`GL_FLOAT_MAT2`<br>`GL_FLOAT_MAT3`<br>`GL_FLOAT_MAT4`<br>`GL_FLOAT_MAT2x3`<br>`GL_FLOAT_MAT2x4`<br>`GL_FLOAT_MAT3x2`<br>`GL_FLOAT_MAT3x4`<br>`GL_FLOAT_MAT4x2`<br>`GL_FLOAT_MAT4x3`<br>`GL_SAMPLER_2D`<br>`GL_SAMPLER_3D`<br>`GL_SAMPLER_CUBE`<br>`GL_SAMPLER_SHADOW`<br>`GL_SAMPLER_2D_ARRAY`<br>`GL_SAMPLER_ARRAY_SHADOW`<br>`GL_SAMPLER_CUBE_SHADOW`<br>`GL_INT_SAMPLER_2D`<br>`GL_INT_SAMPLER_3D`<br>`GL_INT_SAMPLER_CUBE`<br>`GL_INT_SAMPLER_2D_ARRAY`<br>`GL_UNSIGNED_INT_SAMPLER_2D`<br>`GL_UNSIGNED_INT_SAMPLER_3D`<br>`GL_UNSIGNED_INT_SAMPLER_CUBE`<br>`GL_UNSIGNED_INT_SAMPLER_2D_ARRAY`|
+
+`void glGetActiveUniformsiv (GLuint program, GLsizei count, const GLuint* indices, GLenum pname, GLint* params)`
+|参数|说明|
+|:-|:-|
+|**parame**|要查询的program对象|
+|**count**|indices数组元素数量|
+|**indices**|uniform索引列表|
+|**pname**|要查询的属性, 可取值为:<br>`GL_UNIFORM_TYPE`<br>`GL_UNIFORM_SIZE`<br>`GL_UNIFORM_NAME_LENGTH`<br>`GL_UNIFORM_BLOCK_INDEX`<br>`GL_UNIFORM_OFFSET`<br>`GL_UNIFORM_ARRAY_STRIDE`<br>`GL_UNIFORM_MATRIX_STRIDE`<br>`GL_UNIFORM_IS_ROW_MAJOR`|
+|**params**|指向查询结果|
+
+查询到uniform的名字之后, 就可以根据名字查询uniform的位置, 注意, 命名uniform block里的uniform不会被分配一个位置(猜测应该是整个uniform block会被分配一个位置, 而里面的每个uniform不会再被单独分配一个):
+
+`GLint glGetUniformLocation (GLuint program, const char* name)`  
+|参数|说明|
+|:-|:-|
+|program|相应的program对象|
+|name|要查询位置的uniform名字|
+
+如果这个uniform是非激活状态,返回值为-1
+
+查询到uniform的位置之后, 在根据位置和上面查询到的size和type, 就可以为这个uniform加载数据: 
+`void glUniform1f (GLint location, GLfloat x)`  
+`void glUniform1fv (GLint location, GLsizei count, const GLfloat * value)`  
+
+`void glUniform1i (GLint location, GLint x)`  
+`void glUniform1iv (GLint location, GLsizei count, const GLint * value)`  
+
+`void glUniform1ui (GLint location, GLuint x)`  
+`void glUniform1uiv (GLint location, GLsizei count, const GLuint * value)`  
+
+`void glUniform2f (GLint location, GLfloat x, GLfloat y)`  
+`void glUniform2fv (GLint location, GLsizei count, const GLfloat * value)`  
+
+`void glUniform2i (GLint location, GLint x, GLint y)`  
+`void glUniform2iv (GLint location, GLsizei count, const GLint * value)`  
+
+`void glUniform2ui (GLint location, GLuint x, GLuint y)`  
+`void glUniform2uiv (GLint location, GLsizei count, const GLuint * value)`  
+
+`void glUniform3f (GLint location, GLfloat x, GLfloat y, GLfloat z)`  
+`void glUniform3fv (GLint location, GLsizei count, const GLfloat * value)`  
+
+`void glUniform3i (GLint location, GLint x, GLint y, GLint z)`  
+`void glUniform3iv (GLint location, GLsizei count, const GLint * value)`  
+
+`void glUniform3ui (GLint location, GLuint x, GLuint y, GLuint z)`  
+`void glUniform3uiv (GLint location, GLsizei count, const GLuint * value)`  
+
+`void glUniform4f (GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)`  
+`void glUniform4fv (GLint location, GLsizei count, const GLfloat * value)`  
+
+`void glUniform4i (GLint location, GLint x, GLint y, GLint z, GLint w)`  
+`void glUniform4iv (GLint location, GLsizei count, const GLint * value)`  
+
+`void glUniform4ui (GLint location, GLuint x, GLuint y, GLuint z, GLuint w)`  
+`void glUniform4uiv (GLint location, GLsizei count, const GLuint * value)`  
+
+`void glUniformMatrix2fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`  
+`void glUniformMatrix3fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`  
+`void glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`
+
+`void glUniformMatrix2x3fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`  
+`void glUniformMatrix3x2fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`  
+`void glUniformMatrix2x4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`  
+`void glUniformMatrix4x2fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`  
+`void glUniformMatrix3x4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`  
+`void glUniformMatrix4x3fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat * value)`  
+
+|参数|说明|
+|:-|:-|
+|**location**|uniform的位置|
+|**count**|需要加载数据的数组元素的数量或者需要修改的矩阵的数量|
+|**transpose**|指明矩阵是列优先(column major)矩阵(GL_FALSE)还是行优先(row major)矩阵(GL_TRUE)
+|**x,y,z,w**|uniform的值|
+|**value**|指向由count个元素的数组的指针|
+
+---
+### 获得uniform block的名字
+`void glGetActiveUniformBlockName (GLuint program, GLuint index, GLsizei bufSize, GLsizei * length, GLchar * blockName)`  
+|参数|说明|
+|:-|:-|
+|**program**|program对象|
+|**index**|要查询的索引|
+|**bufSize**|名字的(最大)字符数|
+|**length**|如果这个值不是NULL, 会被写入uniform名字的字符数(不包括终止字符)|
+|**name**|被写入uniform的名字, 最多有bufsize个字符, 以终止字符结尾|
+
+---
+### 获得uniform block的其他属性
+`void glGetActiveUniformBlockiv (GLuint program, GLuint index, GLenum pname, GLint * params)`  
+|参数|说明|
+|:-|:-|
+|**program**|program对象|
+|**index**|要查询的索引|
+|**pname**|要查询的属性, 可取值为:<br>`GL_UNIFORM_BLOCK_BINDING` 返回uniform block的最后一个绑定点(如果uniform block不存在, 则为0)<br>`GL_UNIFORM_BLOCK_DATA_SIZE`: 返回包含uniform block中所有uniform的缓冲对象的最小尺寸<br>`GL_UNIFORM_BLOCK_NAME_LENGTH`: 返回uniform block名字的总长度(包括终止字符)<br>`GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS`: 返回uniform block中活动的uniform的数量<br>`GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES`: 返回uniform block中活动的uniform的索引列表<br>`GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER`: 返回uniform block是否由顶点shader引用<br>`GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER`: 返回uniform block是否由片段shader引用|
+|**params**|查询结果|
+
+---
+###根据名字获得uniform block index
+`GLuint glGetUniformBlockIndex (GLuint program, const GLchar * blockName)`  
+|参数|说明|
+|:-|:-|
+|**program**|program对象|
+|**blockName**|uniform block的名字|
+
+---
+### 将uniform block index和program中的一个binding point进行绑定
+`void glUniformBlockBinding (GLuint program, GLuint blockIndex, GLuint blockBinding)`  
+|参数|说明|
+|:-|:-|
+|**program**|program对象|
+|**blockIndex**|uniform block index|
+|**blockbinding**|uniform缓冲对象绑定点|
+
+---
+### 将一个uniform buffer object和这个binding point绑定
+`void glBindBufferRange (GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)`  
+`void glBindBufferBase (GLenum target, GLuint index, GLuint buffer)`  
+|参数|说明|
+|:-|:-|
+|target|必须是:<br>`GL_UNIFORM_BUFFER`<br>`GL_TRANSFORM_FEEDBACK_BUFFER`|
+|index|绑定索引|
+|buffer|缓冲对象|
+|offset|缓冲对象的起始偏移字节数|
+|size|能从缓冲对象读取或者写入缓冲对象的数据量|
+
+当编程使用到uniform时, 有以下限制要注意：
+
+顶点shader或片段shader能使用的活动的uniform block是有数量限制的, 最大值可以通过`glGetIntegerv`调用`GL_MAX_VERTEX_UNIFORM_BLOCKS或`者`GL_MAX_FRAGMENT_UNIFORM_BLOCKS`来查询。任何实现的最大值都不会小于12.
+一个program对象中所有shader能使用的活动的uniform block也是有数量限制的, 最大值可以通过`glGetIntegerv`调用`GL_MAX_COMBINED_UNIFORM_BLOCKS`查询. 任何实现的最大值都不会小于24. 
+每个uniform缓冲对象的最大可用储存量的大小可以通过`glGetInteger64v`来查询. 任何实现的最大值都不会小于16KB. 
+
+如何用前面描述的命名uniform block LightBlock来建立一个uniform缓冲对象:
+```
+GLuint blockId, bufferId;
+GLint blockSize;
+GLuint bindingPoint = 1;
+GLfloat lightData[] =
+{
+    // lightDirection (padded to vec4 based on std140 rule)
+    1.0f, 0.0f, 0.0f, 0.0f
+    
+    // lightPosition
+    0.0f, 0.0f, 0.0f, 1.0f
+};
+
+// Retrieve the uniform block index
+blockId = glGetUniformBlockIndex (program, "LightBlock")
+
+glUniformBlockBinding (program, blockId, bindingPoint)
+
+glGetActiveUniformBlockiv (program, blockId, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize)
+
+glGenBuffers (1, &bufferId);
+glBindBuffer (GL_UNIFORM_BUFFER, bufferId);
+glBufferData (GL_UNIFORM_BUFFER, blockSize, lightData, GL_DYNAMIC_DRAW);
+
+glBindBufferBase (GL_UNIFORM_BUFFER, bindingPoint, bufferId);
+```
+
+## Shader Compiler
+---
+### 释放shader的编译
+`void glReleaseShaderCompiler (void)`  
+这个方法只是一个hint, 所以有些实现会忽略这条命令
+
+---
+### 检索Program Binaries
+`void glGetProgramBinary (GLuint program, GLsizei bufSize, GLsizei * length, GLenum binaryFormat, GLvoid * binary)`  
+|参数|说明|
+|:-|:-|
+|**program**|program对象|
+|**bufSize**|可能被写入到binary的字节最大值|
+|**length**|写入binary的字节数|
+|**binaryFormat**|binary格式|
+|**binary**|binary数据|
+
+---
+### 读回到 OpenGL ES
+`void glProgramBinary (GLuint program, GLenum binaryFormat, const GLvoid * binary, GLsizei length)`  
+|参数|说明|
+|:-|:-|
+|**program**|program对象|
+|**binaryFormat**|binary格式|
+|**binary**|binary数据|
+|**length**|写入binary的字节数|
+
+OpenGL ES并不指定任何二进制格式, 二进制格式完全由各个实现的供应商决定, 这意味着使用`glProgramBinary`的程序的可移植性不强, 即使同一供应商的不同版本之间, 二进制格式也可能改变。所以, 为了确保程序兼容, 在调用`glProgramBinary`之后, 需要通过glGetProgramiv调用`GL_LINK_STATUS`来检查状态, 如果失败, 那么还需要重新编译shader源码.
+
