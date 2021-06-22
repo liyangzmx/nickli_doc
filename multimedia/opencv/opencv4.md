@@ -29,6 +29,8 @@ make -j$(nprocs)
 popd
 ```
 
+**备注**: 如果需要编译arm64-v8a的架构, 需要自己在cmake的参数指定:`-DADNROID_ABI=arm64-v8a`
+
 生成安装:
 ```
 cd out/
@@ -47,6 +49,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include/)
 target_link_libraries( # Specifies the target library.
         <Your Target>
 
+        # 直接写绝对路径就行
         ${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}/libopencv_core.a
         ${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}/liblibpng.a
         ${CMAKE_SOURCE_DIR}/../../../libs/${ANDROID_ABI}/liblibtiff.a
