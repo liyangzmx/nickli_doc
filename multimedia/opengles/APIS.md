@@ -374,3 +374,30 @@ GLuint LoadShader(GLenum type, const char *shaderSrc) {
 |**pname**|获取信息的参数, 可以是:<br>`GL_ACTIVE_ATTRIBUTES`: 顶点着色器中欧给你活动属性的数量<br>`GL_ACTIVE_ATTRIBUTE_MAX_LENGHT`<br>`GL_ACTIVE_UNIFORM_BLOCK`<br>`GL_ACTIVE_UNIFORM_BLOCK_MAX_LENGTH`<br>`GL_ACTIVE_UNIFORMS`<br>`GL_ACTIVE_UNIFORM_MAX_LENGTH`<br>`GL_ATTACHED_SHADERS`<br>`GL_DELETE_STATUS`<br>`GL_INFO_LOG_LENGTH`<br>`GL_LINK_STATUS`: 是否链接成功<br>`GL_PROGRAM_BINARY_RETRIEVABLE_HINT`<br>`GL_TRANSFORM_FEEDBACK_BUFFER_MODE`<br>`GL_TRANSFORM_FEEDBACK_VARYINGS`<br>`GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH`<br>`GL_VALIDATE_STATUS`|
 |**params**|指向查询结果整数存储位置的指针
 
+`void glGetProgramInfoLog(GLuint program, GLsizei maxLength, GLsizei *length, GLchar *infoLog)`  
+|参数|说明|
+|:-|:-|
+|**program**|指向需要获取信息的程序对象的句柄|
+|**maxLength**|存储信息日志的缓冲区大小|
+|**length**|写入的信息日志长度(减去null终止符); 如果不需要知道长度, 这个参数可以是NULL|
+|**infoLog**|指向存储信息日志的字符串缓冲区的指针
+
+`void glValidateProgram(GLuint program)`  
+|参数|说明|
+|:-|:-|
+|**program**|需要校验的程序对象的句柄|
+
+`void glUseProgram(GLuint program)`  
+|参数|说明|
+|:-|:-|
+|**params**|设置为活动程序的程序对象句柄|
+
+`void glGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name)`  
+|参数|说明|
+|:-|:-|
+|program|程序对象的句柄|
+|index|查询的统一变量索引|
+|bufSize|名称数组中的字符数字|
+|length|如果不是NULL, 则是名称数组中写入的字符数(不含null终止符)|
+|size|如果查询的统一变量是个数组, 这个变量将写入程序中使用的最大数组元素(加1); 如果查询的统一变量不是数组, 则该值为1|
+|type|将写入统一变量的类型, 可以为:`GL_FLOAT`<br>`GL_FLOAT_VEC2`<br>`GL_FLOAT_VEC3`<br>`GL_FLOAT_VEC4`<br>`GL_INT`<br>`GL_INT_VEC2`<br>`GL_INT_VEC3`<br>`GL_INT_VEC4`<br>`GL_USIGNED_INT`<br>`GL_USIGNED_INT_VEC2`<br>`GL_USIGNED_INT_VEC3`<br>`GL_USIGNED_INT_VEC4`<br>`GL_BOOL`<br>`GL_BOOL_VEC2`<br>`GL_BOOL_VEC3`<br>`GL_BOOL_VEC4`<br>`GL_FLOAT_MAT2`<br>`GL_FLOAT_MAT3`<br>`GL_FLOAT_MAT4`<br>`GL_FLOAT_MAT2x3`<br>`GL_FLOAT_MAT2x4`<br>`GL_FLOAT_MAT3x2`<br>`GL_FLOAT_MAT3x4`<br>`GL_FLOAT_MAT4x2`<br>`GL_FLOAT_MAT4x3`<br>`GL_SAMPLER_2D`<br>`GL_SAMPLER_3D`<br>`GL_SAMPLER_CUBE`<br>`GL_SAMPLER_SHADOW`<br>`GL_SAMPLER_2D_ARRAY`<br>`GL_SAMPLER_ARRAY_SHADOW`<br>`GL_SAMPLER_CUBE_SHADOW`<br>`GL_INT_SAMPLER_2D`<br>`GL_INT_SAMPLER_3D`<br>`GL_INT_SAMPLER_CUBE`<br>`GL_INT_SAMPLER_2D_ARRAY`<br>`GL_UNSIGNED_INT_SAMPLER_2D`<br>`GL_UNSIGNED_INT_SAMPLER_3D`<br>`GL_UNSIGNED_INT_SAMPLER_CUBE`<br>`GL_UNSIGNED_INT_SAMPLER_2D_ARRAY`|
