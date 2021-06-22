@@ -304,3 +304,73 @@ EGLBoolean initializeWindow(EGLNativeWindowType nativeWindow) {
 |**pname**|获得信息的参数, 可以为:<br>`GL_COMPILE_STATUS`: 编译成功为:`GL_TRUE`<br>`GL_DELETE_STATUS`<br>`GL_INFO_LOG_LENGTH`: 编译日志的长度<br>`GL_SHADER_SOURCE_LENGHT`: 源码长度(包括null终止符)<br>`GL_SHADER_TYPE`|
 |**params**|指向查询结果的整数存储位置的指针|
 
+`void glGetShaderInfoLog(GLuint shader, GLsizei maxLength, GLsizei *length, GLchar *infoLog)`  
+|参数|说明|
+|:-|:-|
+|**shader**|指向需要获取日志的着色器对象的句柄|
+|maxLength|保存信息日志的缓冲区大小|
+|length|写入信息日志的长度(减去null终止符); 如果不需要知道长度, 这个参数可以为NULL|
+|infoLog|指向保存信息日志的字符缓冲区的指针|
+
+例子:
+```
+GLuint LoadShader(GLenum type, const char *shaderSrc) {
+    GLuint shader;
+    GLint compiled;
+
+    shader = glCreateShader(type);
+    if(shader == 0) {
+        return 0;
+    }
+    glShaderSource(shader, 1, &shaderSrc, NULL);
+    glCompileShader(shader);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    if(!compiled) {
+        GLint infoLen = 0;
+        char *infoLog = glGetShaderInfoLog(shader, GL_INFO_LOG_LENGTH, &infoLen);
+        if(infoLen > 1) {
+            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
+            // DO anything...
+            free(infoLog);
+        }
+        glDeleteShader(shader);
+        return 0;
+    }
+    return shader;
+}
+```
+
+---
+### 创建和连接程序
+`GLuint glCreateProgram()`  
+简单返回一个句柄
+
+`void glDeleteProgram(GLuint program)`  
+|参数|说明|
+|:-|:-|
+|program|指向需要删除的程序对象句柄
+
+`void glAttachShader(GLuint program, GLuint shader)`  
+|参数|说明|
+|:-|:-|
+|program|指向程序对象的句柄|
+|shader|指向程序连接的着色器对象的句柄|
+
+`void glDetachShader(GLuint program, GLuint shader)`  
+|参数|说明|
+|:-|:-|
+|program|向程序对象的句柄|
+|shader|指向程序断开连接的着色器对象的句柄|
+
+`void glLinkProgram(GLuint program)`  
+|参数|说明|
+|:-|:-|
+|program|指向程序对象的句柄|
+
+`void glGetProgramiv(GLuint program, GLenum pname, GLint *params)`  
+|参数|说明|
+|:-|:-|
+|**program**|需要获取信息的程序对象句柄|
+|**pname**|获取信息的参数, 可以是:<br>`GL_ACTIVE_ATTRIBUTES`: 顶点着色器中欧给你活动属性的数量<br>`GL_ACTIVE_ATTRIBUTE_MAX_LENGHT`<br>`GL_ACTIVE_UNIFORM_BLOCK`<br>`GL_ACTIVE_UNIFORM_BLOCK_MAX_LENGTH`<br>`GL_ACTIVE_UNIFORMS`<br>`GL_ACTIVE_UNIFORM_MAX_LENGTH`<br>`GL_ATTACHED_SHADERS`<br>`GL_DELETE_STATUS`<br>`GL_INFO_LOG_LENGTH`<br>`GL_LINK_STATUS`: 是否链接成功<br>`GL_PROGRAM_BINARY_RETRIEVABLE_HINT`<br>`GL_TRANSFORM_FEEDBACK_BUFFER_MODE`<br>`GL_TRANSFORM_FEEDBACK_VARYINGS`<br>`GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH`<br>`GL_VALIDATE_STATUS`|
+|**params**|指向查询结果整数存储位置的指针
+
