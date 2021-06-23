@@ -676,3 +676,157 @@ glVertexAttribPointer(VERTEX_TEXCOORD0_INDX, VERTEX_TEXCOORD0_SIZE, GL_FLOAT, GL
 glVertexAttribPointer(VERTEX_TEXCOORD1_INDX, VERTEX_TEXCOORD1_SIZE, GL_FLOAT, GL_FALSE
         VERTEX_TEXCOORD1_SIZE * sizeof(float), texcoord1;
 ```
+
+---
+### 启用和禁用通用顶点属性数组
+`void glEnableVertexAttribArray(GLuint index)`  
+`voil glDisableVertexAttribArray(GLuint index)`  
+|参数|说明|
+|:-|:-|
+|index|指定通用顶点属性索引. 这个值的范围从0到支持最大的顶点属性数量减1|
+
+---
+### 查询活动顶点属性列表和其数据类型
+`void glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufsize, GLsizei *length, GLenum type, GLint *size, GLchar *name)`  
+|参数|说明|
+|:-|:-|
+|**program**|前面成功链接的程度对象|
+|**index**|指定需要查询的顶点属性, 其值为0到`GL_ACTIVE_ATTRIBUTES` - 1. `GL_ACTIVE_ATTRIBUTES`的值用`glGetProgramiv`确定|
+|**bufsize**|指定可以写入到name的最大字节数, 包括null终止符.|
+|**length**|指定写入name的字节数, 如果length不为NULL, 则不包含null终止符|
+|**type**|返回属性类型, 其有效值为:<br>`GL_FLOAT`<br>`GL_FLOAT_VEC2`<br>`GL_FLOAT_VEC3`<br>`GL_FLOAT_VEC4`<br>`GL_FLOAT_MAT2`<br>`GL_FLOAT_MAT3`<br>`GL_FLOAT_MAT4`<br>`GL_FLOAT_MAT2x3`<br>`GL_FLOAT_MAT2x4`<br>`GL_FLOAT_MAT3x2`<br>`GL_FLOAT_MAT3x4`<br>`GL_FLOAT_MAT4x2`<br>`GL_FLOAT_MAT4x3`<br>`GL_INT`<br>`GL_INT_VEC2`<br>`GL_INT_VEC3`<br>`GL_INT_VEC4`<br>`GL_USIGNED_INT`<br>`GL_USIGNED_INT_VEC2`<br>`GL_USIGNED_INT_VEC3`<br>`GL_USIGNED_INT_VEC4`|
+|**size**|返回属性大小. 这以type返回的类型单元格数量指定. 如果变量不是一个数组, 则size总是为1. 如果变量是一个数组, 则size返回数组的大小.|
+|**name**|顶点着色器中声明的属性变量名称|
+
+---
+### 将通用顶点属性索引绑定到顶点着色器的一个属性变量
+`void glBindAttribLocation(GLuint program, GLuint index, const GLchar *name)`  
+|参数|说明|
+|:-|:-|
+|**program**|前面成功链接的程度对象|
+|**index**|通用顶点属性索引, 其值为0到`GL_ACTIVE_ATTRIBUTES - 1`. `GL_ACTIVE_ATTRIBUTES`的值用`glGetProgramiv`确定|
+|**name**|属性变量的名称|
+
+---
+### 获取program定义的程序对象最后一次链接时绑定到属性变量name的通用属性索引
+`GLint glGetAttribLocation(GLuint program, const GLchar *name)`  
+|参数|说明|
+|:-|:-|
+|**program**|程度对象|
+|**name**|属性变量的名称|
+
+举例: 使用常量和顶点数组属性
+```
+int Init(ESContext *esContext) {
+    UserData *userData = (UserData *) esContext->userData;
+    const char vShaderStr[] = 
+        "#version 300 es                            \n"
+        "layout(location = 0) in vec4 a_color;      \n"
+        "layout(location = 1) in vec2 a_position    \n"
+        "out vec4 v_color                           \n"
+        "void main()                                \n"
+        "{                                          \n"
+        "   v_color = a_color;                      \n"
+        "   gl_Position = a_position;               \n"
+        "}";
+    const char fShaderStr[] = 
+        "#version 300 es                            \n"
+        "precision mediump float;                   \n"
+        "in vec4 v_color;                           \n"
+        "out vec4 o_fragColor                       \n"
+        "void main()                                \n"
+        "{                                          \n"
+        "   o_fragColor = v_color;                  \n"
+        "}";
+    GLuint programObject;
+    programObject = esLoadProgram(vShaderStr, fShaderStr);
+    if(programObject == 0) {
+        return GL_FALSE;
+    }
+    userData->programObject = programObject;
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+    return GL_TRUE;
+}
+
+void Draw(ESContext *esContext) {
+    UserData *userData = (UserData *) esContext->userData;
+    GLfloat color[4] = {1.0f, 0.0f, 0.0f, 1.0f};
+    GLfloat vertexPos[3 * 3] = {
+         0.0f,  0.5f,  0.0f, 
+        -0.5f, -0.5f,  0.0f, 
+         0.5f, -0.5f,  0.0f,
+    };
+    glViewPort(0, 0, esContext->width, esContext->height);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glUseProgram(userData->programObject);
+
+    // 传递颜色给顶点着色器的 a_color 常量顶点属性
+    glVertexAttrib4fv(0, color);
+    
+    // 传递顶点数据给顶点着色器的 a_position 顶点属性数组
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, vertexPos);
+    
+    // 启用 a_position 顶点属性数组
+    glEnableVertexAttribArray(1);
+
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    
+    // 禁用 a_position 顶点属性数组
+    glDisableVertexAttribArray(1);
+}
+```
+---
+## 顶点缓冲区对象
+---
+### 分配缓冲区对象
+`void glGenBuffers(GLsizei n, GLuint *buffers)`  
+|参数|说明|
+|:-|:-|
+|**n**|返回缓冲区对象名称数量|
+|**buffers**|指向$n$个条目的数组指针, 该数组是分配的缓冲区对象返回的位置|
+
+---
+### 指定当前缓冲区对象
+`void glBindBuffer(GLenum target, GLuint buffer)`  
+|参数|说明|
+|:-|:-|
+|**target**|可以设置为一下目标中的任何一个:<br>`GL_ARRAY_BUFFER`<br>`GL_ELEMENT_ARRAY_BUFFER`<br>`GL_COPY_READ_BUFFER`<br>`GL_COPY_WRITE_BUFFER`<br>`GL_PIXEL_PACK_BUFFER`<br>`GL_PIXEL_UPACK_BUFFER`<br>`GL_TRANSFORM_FEEDBACK_BUFFER`<br>`GL_UNIFORM_BUFFER`|
+|**buffer**|分配给目标作为当前对象的缓冲区对象|
+
+---
+### 创建和初始化顶点数组数据或者元素数据存储
+`void glBufferData(GLenum target, GLsizeiptr size, const void *data, GLenum usage`  
+|参数|说明|
+|:-|:-|
+|**target**|可以设置为一下目标中的任何一个:<br>`GL_ARRAY_BUFFER`<br>`GL_ELEMENT_ARRAY_BUFFER`<br>`GL_COPY_READ_BUFFER`<br>`GL_COPY_WRITE_BUFFER`<br>`GL_PIXEL_PACK_BUFFER`<br>`GL_PIXEL_UPACK_BUFFER`<br>`GL_TRANSFORM_FEEDBACK_BUFFER`<br>`GL_UNIFORM_BUFFER`|
+|**size**|缓冲区数据存储大小, 以字节表示|
+|**data**|应用程序提供的缓冲区数据指针|
+|**usage**|应用程序将如何使用缓冲区对象中存储的数据的提示|
+
+---
+### 创建和初始化部分顶点数组数据或者元素数据存储?
+`void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const void *data`  
+|参数|说明|
+|:-|:-|
+|**target**|可以设置为一下目标中的任何一个:<br>`GL_ARRAY_BUFFER`<br>`GL_ELEMENT_ARRAY_BUFFER`<br>`GL_COPY_READ_BUFFER`<br>`GL_COPY_WRITE_BUFFER`<br>`GL_PIXEL_PACK_BUFFER`<br>`GL_PIXEL_UPACK_BUFFER`<br>`GL_TRANSFORM_FEEDBACK_BUFFER`<br>`GL_UNIFORM_BUFFER`|
+|**offset**|缓冲区数据存储中的偏移|
+|**size**|被修改的数据存储字节数|
+|**data**|需要被复制到缓冲区对象数据存储的客户数据指针|
+
+举例: 创建和绑定顶点缓冲区对象:
+```
+void initVertexBufferObjects(vertex_t *vertexBuffer,
+        GLushort *indices, GLuint numVertices, 
+        GLuint numIndices, GLuint *vboIds
+        )
+{
+    glGenBuffers(2, vboIds);
+    glBindBuffer(GL_ARRAY_BUFFER, vboIds[0]);
+    glBufferData(GL_ARRAY_BUFFER, numVertices * sizeof(vertex_t), 
+            vertexBuffer, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vboIds[1]);
+    glBufferData(GL_ARRAY_BUFFER, numIndices * sizeof(vertex_t), 
+            indices, GL_STATIC_DRAW);
+}
+```
