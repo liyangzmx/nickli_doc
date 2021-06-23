@@ -478,60 +478,59 @@ GLuint LoadShader(GLenum type, const char *shaderSrc) {
 |**value**|指向由count个元素的数组的指针|
 
 ---
+###根据名字获得uniform block index
+`GLuint glGetUniformBlockIndex (GLuint program, const GLchar * blockName)`  
+|参数|说明|
+|:-|:-|
+|**program**|程序对象句柄|
+|**blockName**|需要获取索引的统一变量块名称|
+
+---
 ### 获得uniform block的名字
 `void glGetActiveUniformBlockName (GLuint program, GLuint index, GLsizei bufSize, GLsizei * length, GLchar * blockName)`  
 |参数|说明|
 |:-|:-|
-|**program**|program对象|
-|**index**|要查询的索引|
-|**bufSize**|名字的(最大)字符数|
-|**length**|如果这个值不是NULL, 会被写入uniform名字的字符数(不包括终止字符)|
-|**name**|被写入uniform的名字, 最多有bufsize个字符, 以终止字符结尾|
+|**program**|程序对象句柄|
+|**index**|需要获取索引的统一变量块索引|
+|**bufSize**|名称数组中的字符数|
+|**length**|如果不为NULL, 将写入名称数组中的字符数(减去null终止符)|
+|**name**|将写入统一变量名称, 最大字符数为bufSize个字符, 这是一个以null终止的字符串|
 
 ---
 ### 获得uniform block的其他属性
 `void glGetActiveUniformBlockiv (GLuint program, GLuint index, GLenum pname, GLint * params)`  
 |参数|说明|
 |:-|:-|
-|**program**|program对象|
-|**index**|要查询的索引|
-|**pname**|要查询的属性, 可取值为:<br>`GL_UNIFORM_BLOCK_BINDING` 返回uniform block的最后一个绑定点(如果uniform block不存在, 则为0)<br>`GL_UNIFORM_BLOCK_DATA_SIZE`: 返回包含uniform block中所有uniform的缓冲对象的最小尺寸<br>`GL_UNIFORM_BLOCK_NAME_LENGTH`: 返回uniform block名字的总长度(包括终止字符)<br>`GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS`: 返回uniform block中活动的uniform的数量<br>`GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES`: 返回uniform block中活动的uniform的索引列表<br>`GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER`: 返回uniform block是否由顶点shader引用<br>`GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER`: 返回uniform block是否由片段shader引用|
-|**params**|查询结果|
+|**program**|程序对象句柄|
+|**index**|要查询的统一变量块索引|
+|**pname**|写入params的统一变量块索引属性, 可以是:<br>`GL_UNIFORM_BLOCK_BINDING` 返回uniform block的最后一个绑定点(如果uniform block不存在, 则为0)<br>`GL_UNIFORM_BLOCK_DATA_SIZE`: 返回包含uniform block中所有uniform的缓冲对象的最小尺寸<br>`GL_UNIFORM_BLOCK_NAME_LENGTH`: 返回uniform block名字的总长度(包括终止字符)<br>`GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS`: 返回uniform block中活动的uniform的数量<br>`GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES`: 返回uniform block中活动的uniform的索引列表<br>`GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER`: 返回uniform block是否由顶点shader引用<br>`GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER`: 返回uniform block是否由片段shader引用|
+|**params**|写入pname指定的结果|
 
 ---
-###根据名字获得uniform block index
-`GLuint glGetUniformBlockIndex (GLuint program, const GLchar * blockName)`  
-|参数|说明|
-|:-|:-|
-|**program**|program对象|
-|**blockName**|uniform block的名字|
-
----
-### 将uniform block index和program中的一个binding point进行绑定
+### 将uniform block index和program中的一个绑定点进行绑定
 `void glUniformBlockBinding (GLuint program, GLuint blockIndex, GLuint blockBinding)`  
 |参数|说明|
 |:-|:-|
-|**program**|program对象|
-|**blockIndex**|uniform block index|
-|**blockbinding**|uniform缓冲对象绑定点|
+|**program**|程序对象句柄|
+|**blockIndex**|统一变量块索引|
+|**blockbinding**|统一变量缓冲对象绑定点|
 
 ---
-### 将一个uniform buffer object和这个binding point绑定
+### 将一个uniform buffer object和这个绑定点绑定
 `void glBindBufferRange (GLenum target, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)`  
 `void glBindBufferBase (GLenum target, GLuint index, GLuint buffer)`  
 |参数|说明|
 |:-|:-|
-|target|必须是:<br>`GL_UNIFORM_BUFFER`<br>`GL_TRANSFORM_FEEDBACK_BUFFER`|
-|index|绑定索引|
-|buffer|缓冲对象|
-|offset|缓冲对象的起始偏移字节数|
-|size|能从缓冲对象读取或者写入缓冲对象的数据量|
+|**target**|必须是:<br>`GL_UNIFORM_BUFFER`<br>`GL_TRANSFORM_FEEDBACK_BUFFER`|
+|**index**|绑定索引|
+|**buffer**|缓冲区对象句柄|
+|**offset**|以字节数计算的缓冲对象起始偏移(仅`glBindBufferRange`|
+|**size**|可以从缓冲对象读取或者写入缓冲对象的数据量(以字节数计算, 仅`glBindBufferRange`|
 
 当编程使用到uniform时, 有以下限制要注意：
-
-顶点shader或片段shader能使用的活动的uniform block是有数量限制的, 最大值可以通过`glGetIntegerv`调用`GL_MAX_VERTEX_UNIFORM_BLOCKS或`者`GL_MAX_FRAGMENT_UNIFORM_BLOCKS`来查询。任何实现的最大值都不会小于12.
-一个program对象中所有shader能使用的活动的uniform block也是有数量限制的, 最大值可以通过`glGetIntegerv`调用`GL_MAX_COMBINED_UNIFORM_BLOCKS`查询. 任何实现的最大值都不会小于24. 
-每个uniform缓冲对象的最大可用储存量的大小可以通过`glGetInteger64v`来查询. 任何实现的最大值都不会小于16KB. 
+* 顶点shader或片段shader能使用的活动的uniform block是有数量限制的, 最大值可以通过`glGetIntegerv`调用`GL_MAX_VERTEX_UNIFORM_BLOCKS或`者`GL_MAX_FRAGMENT_UNIFORM_BLOCKS`来查询。任何实现的最大值都不会小于12.
+* 一个program对象中所有shader能使用的活动的uniform block也是有数量限制的, 最大值可以通过`glGetIntegerv`调用`GL_MAX_COMBINED_UNIFORM_BLOCKS`查询. 任何实现的最大值都不会小于24. 
+* 每个uniform缓冲对象的最大可用储存量的大小可以通过`glGetInteger64v`来查询. 任何实现的最大值都不会小于16KB. 
 
 如何用前面描述的命名uniform block LightBlock来建立一个uniform缓冲对象:
 ```
@@ -568,7 +567,7 @@ glBindBufferBase (GL_UNIFORM_BUFFER, bindingPoint, bufferId);
 这个方法只是一个hint, 所以有些实现会忽略这条命令
 
 ---
-### 检索Program Binaries
+### 检索程序二进制码
 `void glGetProgramBinary (GLuint program, GLsizei bufSize, GLsizei * length, GLenum binaryFormat, GLvoid * binary)`  
 |参数|说明|
 |:-|:-|
@@ -579,7 +578,7 @@ glBindBufferBase (GL_UNIFORM_BUFFER, bindingPoint, bufferId);
 |**binary**|binary数据|
 
 ---
-### 读回到 OpenGL ES
+### 将程序二进制码读回到 OpenGL ES
 `void glProgramBinary (GLuint program, GLenum binaryFormat, const GLvoid * binary, GLsizei length)`  
 |参数|说明|
 |:-|:-|
@@ -590,3 +589,90 @@ glBindBufferBase (GL_UNIFORM_BUFFER, bindingPoint, bufferId);
 
 OpenGL ES并不指定任何二进制格式, 二进制格式完全由各个实现的供应商决定, 这意味着使用`glProgramBinary`的程序的可移植性不强, 即使同一供应商的不同版本之间, 二进制格式也可能改变。所以, 为了确保程序兼容, 在调用`glProgramBinary`之后, 需要通过glGetProgramiv调用`GL_LINK_STATUS`来检查状态, 如果失败, 那么还需要重新编译shader源码.
 
+---
+
+## 顶点属性, 顶点数组和缓冲区对象
+
+### 指定常量顶点属性的值
+`void glVertexAttrib1f(GLuint index, GLfloat x);`  
+`void glVertexAttrib2f(GLuint index, GLfloat x, GLfloat y)`  
+`void glVertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z)`  
+`void glVertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w)`  
+`void glVertexAttrib1fv(GLuint index, const GLfloat *value)`  
+`void glVertexAttrib2fv(GLuint index, const GLfloat *value)`  
+`void glVertexAttrib3fv(GLuint index, const GLfloat *value)`  
+`void glVertexAttrib4fv(GLuint index, const GLfloat *value)`  
+|参数|说明|
+|:-|:-|
+|**index**|指定顶点属性|
+|**x,y,z,w**|指定常量顶点属性的值|
+|**value**|指定常量顶点属性的值|
+
+---
+### 指定顶点数组
+`void glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *ptr)`  
+`void glVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLsizei stride, const void *ptr)`  
+|参数|说明|
+|:-|:-|
+|**index**|指定通用顶点属性索引|
+|**size**|顶点数组中为索引引用的顶点属性所指定的分量数量. 有效值为: 1 ~ 4|
+|**type**|数据格式, **两个函数都**包括的有效值是:<br>`GL_BYTE`<br>`GL_UNSIGNED_BYTE`<br>`GL_SHORT`<br>`GL_UNSIGNED_SHORT`<br>`GL_INT`<br>`GL_UNSIGNED_INT`<br>`glVertexAttribPointer`的有效值**还包括**:<br>`GL_HALF_FLOAT`<br>`GL_FLOAT`<br>`GL_FIXED`<br>`GL_INT_2_10_10_10_REV`<br>`GL_UNSIGNED_INT_2_10_10_10_REV`|
+|**normalized**|(仅`glVertexAttribPointer`)用于表示非浮点数据格式类型在转换为浮点时是否应该规范化. 对于`glVertexAttribPointer`这些值被当作整数对待|
+|**stride**|每个顶点由size指定顶点的属性分量顺序存储. stride指定顶点索引$I$和($I+1$)表示的顶点数据之间的位移. 如果stride为0, 则每个顶点的属性数据顺序存储(只有一个顶点数据时). 如果stride大于0, 则使用该值作为获取下一个索引表示的顶点数据的跨距|
+|**ptr**|如果使用客户端顶点数组, 则是保存顶点属性数据的缓冲区的指针. 如果使用顶点缓冲对象, 则表示该缓冲区内的偏移量|
+
+举例:
+* 结构数组(xyzxyzstst|xyzxyzstst|xyzxyzstst|...): 
+```
+#define VERTEX_POS_SIZE         3
+#define VERTEX_NORMAL_SIZE      3
+#define VERTEX_TEXCOORD0_SIZE   2
+#define VERTEX_TEXCOORD1_SIZE   2
+
+#define VERTEX_POS_INDX         0
+#define VERTEX_NORMAL_INDX      1
+#define VERTEX_TEXCOORD0_INDX   2
+#define VERTEX_TEXCOORD1_INDX   3
+
+#define VERTEX_POS_OFFSET       0
+#define VERTEX_NORMAL_OFFSET    3
+#define VERTEX_TEXCOORD0_OFFSET 6
+#define VERTEX_TEXCOORD1_OFFSET 8
+
+#define VERTEX_ATTRIB_SIZE     (VERTEX_POS_SIZE + \
+                                VERTEX_NORMAL_SIZE + \
+                                VERTEX_TEXCOORD0_SIZE + \
+                                VERTEX_TEXCOORD1_SIZE)
+
+float *p = (float *)malloc(numVertices * VERTEX_ATTRIB_SIZE * sizeof(float));
+glVertexAttribPointer(VERTEX_POS_INDX, VERTEX_POS_SIZE, GL_FLOAT, GL_FALSE
+        VERTEX_ATTRIB_SIZE * sizeof(float), p);
+
+glVertexAttribPointer(VERTEX_NORMAL_INDX, VERTEX_NORMAL_SIZE, GL_FLOAT, GL_FALSE
+        VERTEX_ATTRIB_SIZE * sizeof(float), (p + VERTEX_NORMAL_OFFSET));
+
+glVertexAttribPointer(VERTEX_TEXCOORD0_INDX, VERTEX_TEXCOORD0_SIZE, GL_FLOAT, GL_FALSE
+        VERTEX_ATTRIB_SIZE * sizeof(float), (p + VERTEX_TEXCOORD0_OFFSET));
+
+glVertexAttribPointer(VERTEX_TEXCOORD1_INDX, VERTEX_TEXCOORD1_SIZE, GL_FLOAT, GL_FALSE
+        VERTEX_ATTRIB_SIZE * sizeof(float), (p + VERTEX_TEXCOORD1_OFFSET));
+```
+* 数组结构(xyzxyzxyz...|xyzxyzxyz...|ststst...|ststst...|):
+```
+float postion = (float *)malloc(numVertices * VERTEX_POS_SIZE * sizeof(float));
+float normal = (float *)malloc(numVertices * VERTEX_NORMAL_SIZE * sizeof(float));
+float texcoord0 = (float *)malloc(numVertices * VERTEX_TEXCOORD0_SIZE * sizeof(float));
+float texcoord0 = (float *)malloc(numVertices * VERTEX_TEXCOORD1_SIZE * sizeof(float));
+
+glVertexAttribPointer(VERTEX_POS_INDX, VERTEX_POS_SIZE, GL_FLOAT, GL_FALSE
+        VERTEX_POS_SIZE * sizeof(float), positon);
+
+glVertexAttribPointer(VERTEX_NORMAL_INDX, VERTEX_NORMAL_SIZE, GL_FLOAT, GL_FALSE
+        VERTEX_NORMAL_SIZE * sizeof(float), normal);
+
+glVertexAttribPointer(VERTEX_TEXCOORD0_INDX, VERTEX_TEXCOORD0_SIZE, GL_FLOAT, GL_FALSE
+        VERTEX_TEXCOORD0_SIZE * sizeof(float), texcoord0;
+
+glVertexAttribPointer(VERTEX_TEXCOORD1_INDX, VERTEX_TEXCOORD1_SIZE, GL_FLOAT, GL_FALSE
+        VERTEX_TEXCOORD1_SIZE * sizeof(float), texcoord1;
+```
