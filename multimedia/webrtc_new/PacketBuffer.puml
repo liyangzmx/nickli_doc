@@ -1,0 +1,151 @@
+@startuml PacketBuffer
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+participant RtpTransport
+participant RtpDemuxer
+participant "[RtpPacketSinkInterface]\nBaseChannel" as BaseChannel
+participant "[MediaChannel]\n[VideoMediaChannel]\nWebRtcVideoChannel" as WebRtcVideoChannel
+participant "[webrtc::Call]\ninternal::Call" as Call
+participant "RtpStreamRecei\nverController" as RtpStreamReceiverController
+participant "RtpDemuxer" as RtpDemuxer2
+participant "[RtpPacketSinkInterface]\nRtpVideoStreamReceiver2" as RtpVideoStreamReceiver2
+participant VideoReceiveStream2
+participant "Packet" as Packet
+participant PacketBuffer
+participant "RtpFrameRefer\nenceFinder" as RtpFrameReferenceFinder
+participant "[EncodedFrame]\nRtpFrameObject" as RtpFrameObject
+participant FrameBuffer
+
+->RtpTransport:OnReadPacket()
+activate RtpTransport
+RtpTransport->RtpTransport:OnRtpPacketReceived()
+activate RtpTransport
+RtpTransport->RtpTransport:DemuxPacket()
+activate RtpTransport
+create RtpDemuxer
+RtpTransport->RtpDemuxer:OnRtpPacket()
+deactivate RtpTransport
+deactivate RtpTransport
+deactivate RtpTransport
+create BaseChannel
+RtpDemuxer->BaseChannel:OnRtpPacket()
+create WebRtcVideoChannel
+BaseChannel->WebRtcVideoChannel:OnPacketReceived()
+create Call
+WebRtcVideoChannel->Call:DeliverPacket()
+activate Call
+Call->Call:DeliverRtcp()
+activate Call
+create RtpStreamReceiverController
+Call->RtpStreamReceiverController:OnRtpPacket()
+deactivate Call
+deactivate Call
+create RtpDemuxer2
+RtpStreamReceiverController->RtpDemuxer2:OnRtpPacket()
+create RtpVideoStreamReceiver2
+RtpDemuxer2->RtpVideoStreamReceiver2:OnRtpPacket()
+activate RtpVideoStreamReceiver2
+RtpVideoStreamReceiver2->RtpVideoStreamReceiver2:ReceivePacket()
+activate RtpVideoStreamReceiver2
+RtpVideoStreamReceiver2->RtpVideoStreamReceiver2:OnReceivedPayloadData()
+activate RtpVideoStreamReceiver2
+
+create Packet
+RtpVideoStreamReceiver2-->Packet:new
+create PacketBuffer
+RtpVideoStreamReceiver2->PacketBuffer:InsertPacket()
+Packet-->o PacketBuffer:buffer_[]
+RtpVideoStreamReceiver2->RtpVideoStreamReceiver2:OnInsertedPacket()
+activate RtpVideoStreamReceiver2
+create RtpFrameObject
+RtpVideoStreamReceiver2-->RtpFrameObject:new
+Packet-->RtpFrameObject:ASSEMBLY
+RtpVideoStreamReceiver2->RtpVideoStreamReceiver2:OnAssembledFrame()
+activate RtpVideoStreamReceiver2
+create RtpFrameReferenceFinder
+RtpVideoStreamReceiver2->RtpFrameReferenceFinder:ManageFrame()
+RtpFrameReferenceFinder-->RtpFrameObject:FINDED
+
+create VideoReceiveStream2
+RtpVideoStreamReceiver2->VideoReceiveStream2:OnCompleteFrames()
+deactivate RtpVideoStreamReceiver2
+deactivate RtpVideoStreamReceiver2
+deactivate RtpVideoStreamReceiver2
+deactivate RtpVideoStreamReceiver2
+deactivate RtpVideoStreamReceiver2
+activate VideoReceiveStream2
+VideoReceiveStream2-->VideoReceiveStream2:OnCompleteFrame()
+activate VideoReceiveStream2
+VideoReceiveStream2->FrameBuffer:InsertFrame()
+deactivate VideoReceiveStream2
+deactivate VideoReceiveStream2
+activate FrameBuffer
+RtpFrameObject-->o FrameBuffer:frames_[]
+deactivate FrameBuffer
+
+VideoReceiveStream2->VideoReceiveStream2:StartNextDecode()
+activate VideoReceiveStream2
+
+create FrameBuffer
+VideoReceiveStream2->FrameBuffer:NextFrame()
+deactivate VideoReceiveStream2
+activate FrameBuffer
+FrameBuffer-->VideoReceiveStream2:HandleEncodedFrame()
+deactivate FrameBuffer
+activate VideoReceiveStream2
+VideoReceiveStream2->VideoReceiveStream2:DecodeAndMaybe\nDispatchEncodedFrame()
+activate VideoReceiveStream2
+create VideoReceiver2
+VideoReceiveStream2->VideoReceiver2:Decode()
+deactivate VideoReceiveStream2
+deactivate VideoReceiveStream2
+create VCMGenericDecoder
+VideoReceiver2->VCMGenericDecoder:Decode()
+
+@enduml

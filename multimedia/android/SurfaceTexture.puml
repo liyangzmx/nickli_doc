@@ -1,0 +1,175 @@
+@startuml SurfaceTexture
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+' participant IProducerListener
+box Surface
+participant "<font color=red>Surface</font>" as SurfaceJ
+participant Surface
+end box
+
+box Fence
+participant BufferQueueProducer
+participant BufferQueueCore
+participant "[IConsumerListener]\nProxyConsumerListener" as ProxyConsumerListener
+participant "[IGraphicBufferConsumer]\nBufferQueueConsumer" as BufferQueueConsumer
+end box
+
+box SurfaceTexture
+participant "[ConsumerListener]\n[ConsumerBase]\nSurfaceTexture" as SurfaceTexture
+participant JNISurfaceTextureContext
+participant "<font color=red>SurfaceTexture</font>" as SurfaceTextureJ
+participant Handler
+participant OnFrameAvailableListener
+participant EGLConsumer
+participant EglImage
+end box
+
+box GLSurfaceView
+participant "[GLSurfaceView]\nMyGLSurfaceView" as GLSurfaceView
+end box
+
+SurfaceTextureJ<-:init()
+activate SurfaceTextureJ
+SurfaceTextureJ-->BufferQueueCore:new
+SurfaceTextureJ-->BufferQueueProducer:new
+activate BufferQueueProducer
+BufferQueueCore-->o BufferQueueProducer:mCore
+deactivate BufferQueueProducer
+SurfaceTextureJ-->BufferQueueConsumer:new
+activate BufferQueueConsumer
+BufferQueueCore-->o BufferQueueConsumer:mCore
+deactivate BufferQueueConsumer
+SurfaceTextureJ-->SurfaceTexture:new
+activate SurfaceTexture
+SurfaceTexture-->EGLConsumer:new
+EGLConsumer-->o SurfaceTexture:mEGLConsumer
+SurfaceTexture->SurfaceTexture:ConsumerBase::ConsumerBase()
+activate SurfaceTexture
+
+SurfaceTexture-->o ProxyConsumerListener:mConsumerListener
+BufferQueueConsumer-->o SurfaceTexture:mConsumer
+SurfaceTexture->BufferQueueConsumer:consumerConnect()
+deactivate SurfaceTexture
+deactivate SurfaceTexture
+activate BufferQueueConsumer
+BufferQueueConsumer->BufferQueueConsumer:connect()
+activate BufferQueueConsumer
+ProxyConsumerListener-->o BufferQueueCore:mConsumerListener
+BufferQueueCore-->BufferQueueConsumer
+BufferQueueConsumer-->SurfaceTextureJ
+deactivate BufferQueueConsumer
+deactivate BufferQueueConsumer
+
+BufferQueueProducer-->o SurfaceTextureJ:mProducer
+SurfaceTextureJ-->JNISurfaceTextureContext:new
+SurfaceTextureJ-->SurfaceTexture:setFrameAvailableListener()
+activate SurfaceTexture
+JNISurfaceTextureContext-->o SurfaceTexture:mFrameAvailableListener
+SurfaceTexture-->SurfaceTextureJ
+deactivate SurfaceTexture
+deactivate SurfaceTextureJ
+
+' ->Surface:connect()
+' Surface->BufferQueueProducer:connect()
+' IProducerListener-->o BufferQueueCore:mConnectedProducerListener
+
+->SurfaceJ:new
+activate SurfaceJ
+SurfaceJ->SurfaceJ:nativeCreateFromSurfaceTexture()
+activate SurfaceJ
+SurfaceJ-->Surface:new
+BufferQueueProducer-[#Blue]->o Surface:<font color=blue>mGraphicBufferProducer</font>
+Surface-->SurfaceJ
+deactivate SurfaceJ
+deactivate SurfaceJ
+
+->Surface:queueBuffer()
+Surface-[#Blue]>BufferQueueProducer:<font color=blue>queueBuffer()</font>
+BufferQueueProducer->ProxyConsumerListener:onFrameAvailable()
+note left:**mCore->mConsumerListener**
+
+ProxyConsumerListener->SurfaceTexture:onFrameAvailable()
+SurfaceTexture->JNISurfaceTextureContext:onFrameAvailable()
+JNISurfaceTextureContext->SurfaceTextureJ:onFrameAvailable()
+SurfaceTextureJ->Handler:sendEmptyMessage()
+activate Handler
+Handler->Handler:handleMessage()
+activate Handler
+Handler->OnFrameAvailableListener:onFrameAvailable()
+deactivate Handler
+deactivate Handler
+OnFrameAvailableListener->GLSurfaceView:requestRender()
+note over GLSurfaceView:**WAITING RENDER**
+activate GLSurfaceView
+
+GLSurfaceView<-:onDrawFrame()
+GLSurfaceView->SurfaceTextureJ:updateTexImage()
+deactivate GLSurfaceView
+activate SurfaceTextureJ
+SurfaceTextureJ->SurfaceTextureJ:nativeUpdateTexImage()
+activate SurfaceTextureJ
+SurfaceTextureJ->SurfaceTexture:updateTexImage()
+deactivate SurfaceTextureJ
+deactivate SurfaceTextureJ
+activate SurfaceTexture
+SurfaceTexture->EGLConsumer:updateTexImage()
+deactivate SurfaceTexture
+activate EGLConsumer
+EGLConsumer->EGLConsumer:glBindTexture()
+EGLConsumer->EGLConsumer:bindTextureImageLocked()
+activate EGLConsumer
+EGLConsumer->EGLConsumer:glBindTexture()
+EGLConsumer->EglImage:bindToTextureTarget()
+deactivate EGLConsumer
+deactivate EGLConsumer
+activate EglImage
+EglImage->EglImage:glEGLImageTargetTexture2DOES()
+deactivate EglImage
+
+@enduml

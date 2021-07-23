@@ -1,0 +1,289 @@
+@startuml Candidate
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+participant PeerConnection
+participant SdpOfferAnswerHandler
+participant JsepTransportController
+participant BasicIceController
+participant P2PTransportChannel
+participant "[PortAllocator]\nBasicPortAllocator" as PortAllocator
+participant "[NetworkManager]\b[NetworkManagerBase]\nBasicNetworkManager" as NetworkManager
+participant "[Connection]\nProxyConnection" as Connection
+participant UDPPort
+participant BasicPortAllocatorSession
+participant AllocationSequence
+participant "[AsyncPacketSocket]\nAsyncUDPSocket" as AsyncUDPSocket
+participant "[Socket]\n[AsyncSocket]\nAsyncSocketAdapter" as AsyncSocketAdapter
+
+participant "[Port]\n[UDPPort]\nStunPort" as StunPort
+participant "[Connection]\nProxyConnection" as Connection2
+participant StunRequest
+participant  StunRequestManager
+participant AddressResolver
+participant "BasicPortAllocatorSession" as BasicPortAllocatorSession2
+participant AllocationSequence2
+participant JsepTransport
+participant DtlsTransport
+
+participant "P2PTransportChannel" as P2PTransportChannel2
+participant "JsepTransportController" as JsepTransportController2
+participant "SdpOfferAnswerHandler" as SdpOfferAnswerHandler2
+participant "PeerConnection" as PeerConnection2
+
+->PeerConnection:SetLocalDescription()
+activate PeerConnection
+PeerConnection->SdpOfferAnswerHandler:SetLocalDescription()
+deactivate PeerConnection
+activate SdpOfferAnswerHandler
+SdpOfferAnswerHandler->SdpOfferAnswerHandler:DoSetLocalDescription()
+activate SdpOfferAnswerHandler
+SdpOfferAnswerHandler->P2PTransportChannel:MaybeStartGathering()
+deactivate SdpOfferAnswerHandler
+deactivate SdpOfferAnswerHandler
+activate P2PTransportChannel
+P2PTransportChannel->PortAllocator:CreateSession()
+deactivate P2PTransportChannel
+activate PortAllocator
+PortAllocator->PortAllocator:CreateSessionInternal()
+activate PortAllocator
+PortAllocator-->BasicPortAllocatorSession:new
+deactivate PortAllocator
+deactivate PortAllocator
+BasicPortAllocatorSession->NetworkManager:StartUpdating()
+activate NetworkManager
+note over NetworkManager:**Updating...**
+NetworkManager->NetworkManager:OnMessage()
+activate NetworkManager
+NetworkManager->BasicPortAllocatorSession:OnNetworksChanged()
+deactivate NetworkManager
+deactivate NetworkManager
+note left:**SignalNetworksChanged**
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->PortAllocator:OnIceRegathering()
+note left:**SignalIceRegathering**
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession->BasicPortAllocatorSession:DoAllocate()
+activate BasicPortAllocatorSession
+BasicPortAllocatorSession-->AllocationSequence:new
+BasicPortAllocatorSession->AllocationSequence:Init()
+AllocationSequence-->AsyncUDPSocket:new
+BasicPortAllocatorSession->AllocationSequence:Start()
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+deactivate BasicPortAllocatorSession
+activate AllocationSequence
+AllocationSequence->AllocationSequence:Process()
+activate AllocationSequence
+AllocationSequence->AllocationSequence:CreateUDPPorts()
+AllocationSequence-->UDPPort:new
+deactivate AllocationSequence
+deactivate AllocationSequence
+deactivate AllocationSequenceMaybeStartGathering
+activate UDPPort
+UDPPort->UDPPort:FinishAddingAddress()
+activate UDPPort
+UDPPort->BasicPortAllocatorSession:OnCandidateReady()
+deactivate UDPPort
+deactivate UDPPort
+deactivate UDPPort
+activate BasicPortAllocatorSession
+note left:**SignalCandidateReady**
+BasicPortAllocatorSession->P2PTransportChannel:OnCandidatesReady()
+deactivate BasicPortAllocatorSession
+note left:**SignalCandidatesReady**
+P2PTransportChannel->JsepTransportController:OnTransportCandidateGathered_n()
+note left:**SignalCandidateGathered**
+JsepTransportController->PeerConnection:OnTransportController\nCandidatesGathered()
+activate PeerConnection
+PeerConnection->PeerConnection:OnIceCandidate()
+activate PeerConnection
+deactivate PeerConnection
+deactivate PeerConnection
+
+
+PeerConnection2<-:SetRemoteDescription()
+PeerConnection2->SdpOfferAnswerHandler2:SetRemoteDescription()
+activate SdpOfferAnswerHandler2
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:DoSetRemoteDescription()
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:ApplyRemoteDescription()
+activate SdpOfferAnswerHandler2
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:PushdownTransportDescription()
+activate SdpOfferAnswerHandler2
+SdpOfferAnswerHandler2->JsepTransportController2:SetRemoteDescription()
+deactivate SdpOfferAnswerHandler2
+deactivate SdpOfferAnswerHandler2
+activate JsepTransportController2
+JsepTransportController2->JsepTransportController2:ApplyDescription_n()
+activate JsepTransportController2
+JsepTransportController2->JsepTransportController2:MaybeCreateJsepTransport()
+activate JsepTransportController2
+JsepTransportController2->JsepTransportController2:CreateDtlsTransport()
+activate JsepTransportController2
+JsepTransportController2-->DtlsTransport:new
+JsepTransportController2-->JsepTransport:new
+deactivate JsepTransportController2
+deactivate JsepTransportController2
+deactivate JsepTransportController2
+deactivate JsepTransportController2
+DtlsTransport-->o JsepTransport:dtls_srtp_transport_
+
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:UpdateTransceiversAndDataChannels()
+activate SdpOfferAnswerHandler2
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:AssociateTransceiver()
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:UpdateTransceiverChannel()
+activate SdpOfferAnswerHandler2
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:CreateVoiceChannel()
+activate SdpOfferAnswerHandler2
+deactivate SdpOfferAnswerHandler2
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:CreateVideoChannel()
+activate SdpOfferAnswerHandler2
+deactivate SdpOfferAnswerHandler2
+deactivate SdpOfferAnswerHandler2
+deactivate SdpOfferAnswerHandler2
+deactivate SdpOfferAnswerHandler2
+deactivate SdpOfferAnswerHandler2
+
+
+PeerConnection2<-:AddIceCandidate()
+PeerConnection2->SdpOfferAnswerHandler2:AddIceCandidate
+activate SdpOfferAnswerHandler2
+SdpOfferAnswerHandler2->SdpOfferAnswerHandler2:AddIceCandidateInternal()
+activate SdpOfferAnswerHandler2
+SdpOfferAnswerHandler2->PeerConnection2:AddRemoteCandidate()
+deactivate SdpOfferAnswerHandler2
+deactivate SdpOfferAnswerHandler2
+PeerConnection2->JsepTransportController2:AddRemoteCandidates()
+JsepTransportController2->P2PTransportChannel2:AddRemoteCandidate()
+activate P2PTransportChannel2
+P2PTransportChannel2->P2PTransportChannel2:ResolveHostnameCandidate()
+P2PTransportChannel2->P2PTransportChannel2:FinishAddingRemoteCandidate()
+activate P2PTransportChannel2
+P2PTransportChannel2->P2PTransportChannel2:CreateConnections()
+activate P2PTransportChannel2
+P2PTransportChannel2->Connection2:MaybeUpdatePeerReflexiveCandidate()
+deactivate P2PTransportChannel2
+deactivate P2PTransportChannel2
+deactivate P2PTransportChannel2
+
+->AllocationSequence2:Process()
+activate AllocationSequence2
+AllocationSequence2->AllocationSequence2:CreateStunPorts()
+activate AllocationSequence2
+AllocationSequence2->BasicPortAllocatorSession2:AddAllocatedPort()
+deactivate AllocationSequence2
+deactivate AllocationSequence2
+activate BasicPortAllocatorSession2
+BasicPortAllocatorSession2->StunPort:PrepareAddress()
+deactivate BasicPortAllocatorSession2
+activate StunPort
+StunPort->StunPort:SendStunBindingRequest()
+activate StunPort
+StunPort->StunPort:ResolveStunAddress()
+activate StunPort
+StunPort->AddressResolver:Resolve()
+deactivate StunPort
+deactivate StunPort
+deactivate StunPort
+activate AddressResolver
+AddressResolver->StunPort:OnResolveResult()
+note left:**SignalDone**
+deactivate AddressResolver
+activate StunPort
+StunPort->StunPort:SendStunBindingRequest()
+activate StunPort
+StunPort->StunRequestManager:Send()
+deactivate StunPort
+deactivate StunPort
+activate StunRequestManager
+StunRequestManager->StunRequestManager:SendDelayed()
+activate StunRequestManager
+StunRequestManager->StunRequest:OnMessage()
+deactivate StunRequestManager
+deactivate StunRequestManager
+activate StunRequest
+StunRequest->Connection2:OnSendStunPacket()
+deactivate StunRequest
+Connection2->StunPort:SendTo()
+StunPort-[#Blue]>AsyncSocketAdapter:SendTo()
+
+AsyncUDPSocket<[#Blue]-AsyncSocketAdapter:OnReadEvent()
+note left:**SignalReadEvent**
+AsyncUDPSocket->AllocationSequence:OnReadPacket()
+note left:**SignalReadPacket**
+AllocationSequence->UDPPort:HandleIncomingPacket()
+activate UDPPort
+UDPPort->UDPPort:OnReadPacket()
+activate UDPPort
+UDPPort->Connection:OnReadPacket()
+deactivate UDPPort
+deactivate UDPPort
+activate Connection
+Connection->UDPPort:GetStunMessage()
+Connection->P2PTransportChannel:OnReadPacket()
+note left:**SignalReadPacket**
+deactivate Connection
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:MaybeSwitchSelectedConnection()
+note left:**如果是受控端，可能需要根据接收媒体路径切换发送连接**
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:MaybeSwitchSelectedConnection()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:SwitchSelectedConnection()
+activate P2PTransportChannel
+P2PTransportChannel->P2PTransportChannel:PingConnection()
+P2PTransportChannel->P2PTransportChannel:MarkConnectionPinged()
+' Connection->BasicRegatheringController:OnIceTransportNetworkRouteChanged()
+' note left:**SignalNetworkRouteChanged**
+P2PTransportChannel->BasicIceController:SetSelectedConnection()
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+deactivate P2PTransportChannel
+
+@enduml
