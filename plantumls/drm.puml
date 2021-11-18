@@ -1,0 +1,302 @@
+@startuml DRM
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box SF
+participant Composer
+participant ComposerClientImpl
+participant ComposerImpl
+end box
+
+box HWC HAL
+participant HwcHalImpl
+participant DrmVsyncCallback
+end box
+
+box DRM HWC2
+participant hwc2_module_methods
+participant DrmHwcTwo
+participant ResourceManager
+participant DrmDevice
+participant DrmHotplugHandler
+participant DrmEventListener
+participant HwcDisplay
+participant DrmDisplayCompositor
+participant CompositorVsyncCallback
+participant VSyncWorker
+end box
+
+box libdrm
+participant libdrm
+end box
+
+box kernel
+participant drm_file
+end box
+
+box crtc
+participant drm_vbalnk
+participant drm_vblank_crtc
+participant drm_atomic_uapi
+participant drm_atomic
+participant drm_atomic_helper
+end box
+
+box rockchip
+participant rockchip_drm_mode_config_funcs
+participant plane_helper_funcs
+participant rockchip_drm_vop
+end box
+
+
+
+VSyncWorker->VSyncWorker:InternalRoutine()
+activate VSyncWorker
+VSyncWorker->VSyncWorker:Routine()
+activate VSyncWorker
+
+->hwc2_module_methods:open()
+hwc2_module_methods->DrmHwcTwo:HookDevOpen()
+activate DrmHwcTwo
+DrmHwcTwo-->DrmHwcTwo:NEW
+activate DrmHwcTwo
+DrmHwcTwo->DrmHwcTwo:Init()
+activate DrmHwcTwo
+DrmHwcTwo->ResourceManager:Init()
+activate ResourceManager
+ResourceManager->ResourceManager:AddDrmDevice()
+activate ResourceManager
+ResourceManager-->DrmDevice:NEW
+DrmDevice-->o ResourceManager:drms_
+ResourceManager->DrmDevice:Init()
+deactivate ResourceManager
+deactivate ResourceManager
+activate DrmDevice
+
+DrmDevice->DrmEventListener:Init()
+deactivate DrmDevice
+activate DrmEventListener
+DrmEventListener->DrmEventListener:DrmEventListener()
+activate DrmEventListener
+DrmEventListener->DrmEventListener:select()
+activate DrmEventListener
+
+DrmHwcTwo-->DrmHotplugHandler:NEW
+DrmHwcTwo-->o DrmHotplugHandler:hwc2_
+DrmHotplugHandler-->o DrmEventListener:hotplug_handler_
+
+
+DrmHwcTwo->DrmHwcTwo:CreateDisplay()
+DrmHwcTwo-->HwcDisplay:NEW
+HwcDisplay-->o DrmHwcTwo:displays_
+DrmHwcTwo->HwcDisplay:Init()
+deactivate DrmHwcTwo
+deactivate DrmHwcTwo
+deactivate DrmHwcTwo
+activate HwcDisplay
+HwcDisplay->DrmDisplayCompositor:Init()
+deactivate HwcDisplay
+
+DrmDisplayCompositor->VSyncWorker:Init()
+DrmDisplayCompositor-->CompositorVsyncCallback:new
+CompositorVsyncCallback-->o VSyncWorker:callback_
+DrmDisplayCompositor-->o CompositorVsyncCallback:compositor_
+
+VSyncWorker->VSyncWorker:drmWaitVBlank()
+activate VSyncWorker
+VSyncWorker->libdrm:drmWaitVBlank()
+deactivate VSyncWorker
+activate libdrm
+libdrm->libdrm:ioctl()
+note left:**DRM_IOCTL_WAIT_VBLANK**
+activate libdrm
+libdrm->drm_file:ioctl()
+activate drm_file
+drm_file->drm_vbalnk:drm_wait_vblank_ioctl()
+deactivate drm_file
+activate drm_vbalnk
+drm_vbalnk->drm_vblank_crtc:wait_event_interruptible_timeout()
+deactivate drm_vbalnk
+activate drm_vblank_crtc
+
+-->Composer:NEW
+activate Composer
+Composer->ComposerImpl:createClient()
+ComposerImpl--> ComposerClientImpl:RET
+
+Composer->ComposerClientImpl:createClient()
+deactivate Composer
+activate ComposerClientImpl
+ComposerClientImpl->ComposerClientImpl:registerCallback()
+activate ComposerClientImpl
+ComposerClientImpl->HwcHalImpl:registerEventCallback()
+deactivate ComposerClientImpl
+deactivate ComposerClientImpl
+note left:**HWC2_CALLBACK_HOTPLUG**
+note left:**HWC2_CALLBACK_REFRESH**
+note left:**HWC2_CALLBACK_VSYNC**
+activate HwcHalImpl
+HwcHalImpl->HwcHalImpl:mDispatch.registerCallback()
+activate HwcHalImpl
+HwcHalImpl->DrmHwcTwo:RegisterCallback()
+deactivate HwcHalImpl
+deactivate HwcHalImpl
+activate DrmHwcTwo
+DrmHwcTwo->HwcDisplay:RegisterVsyncCallback()
+deactivate DrmHwcTwo
+activate HwcDisplay
+HwcDisplay->VSyncWorker:RegisterCallback()
+DrmVsyncCallback-->o VSyncWorker:callbacks_
+deactivate HwcDisplay
+
+
+
+rockchip_drm_vop<-:vop_isr()
+activate rockchip_drm_vop
+rockchip_drm_vop->drm_vblank_crtc:drm_crtc_handle_vblank()
+activate drm_vblank_crtc
+drm_vblank_crtc->drm_vblank_crtc:drm_handle_vblank()
+activate drm_vblank_crtc
+drm_vblank_crtc-->libdrm
+deactivate drm_vblank_crtc
+deactivate drm_vblank_crtc
+deactivate drm_vblank_crtc
+
+libdrm-->VSyncWorker:RET
+deactivate libdrm
+deactivate libdrm
+
+VSyncWorker->DrmVsyncCallback:Callback()
+DrmVsyncCallback->HwcHalImpl:vsyncHook()
+
+VSyncWorker->CompositorVsyncCallback:Callback()
+deactivate VSyncWorker
+deactivate VSyncWorker
+CompositorVsyncCallback->DrmDisplayCompositor:Vsync()
+activate DrmDisplayCompositor
+DrmDisplayCompositor->DrmDisplayCompositor:FlattenActiveComposition()
+activate DrmDisplayCompositor
+DrmDisplayCompositor->DrmDisplayCompositor:FlattenSerial()
+activate DrmDisplayCompositor
+DrmDisplayCompositor->DrmDisplayCompositor:SetupWritebackCommit()
+activate DrmDisplayCompositor
+deactivate DrmDisplayCompositor
+
+drm_atomic_helper->drm_atomic_helper:commit_work()
+activate drm_atomic_helper
+
+DrmDisplayCompositor->libdrm:drmModeAtomicCommit()
+deactivate DrmDisplayCompositor
+deactivate DrmDisplayCompositor
+deactivate DrmDisplayCompositor
+activate libdrm
+libdrm->libdrm:drmModeAtomicDuplicate()
+libdrm->libdrm:drmMalloc()
+libdrm->libdrm:...
+libdrm->libdrm:drmMalloc()
+libdrm->drm_file:ioctl()
+note left:**DRM_IOCTL_MODE_ATOMIC**
+deactivate libdrm
+drm_file->drm_atomic_uapi:drm_mode_atomic_ioctl()
+drm_atomic_uapi->drm_atomic:drm_atomic_commit()
+' drm_atomic->drm_mode_config_funcs:atomic_commit()
+' drm_mode_config_funcs->rockchip_drm_mode_config_funcs:drm_atomic_helper_commit()
+drm_atomic->rockchip_drm_mode_config_funcs:drm_atomic_helper_commit()
+rockchip_drm_mode_config_funcs->drm_atomic_helper:queue_work()
+drm_atomic_helper->drm_atomic_helper:commit_tail()
+activate drm_atomic_helper
+drm_atomic_helper->drm_atomic_helper:drm_atomic_helper_commit_tail()
+activate drm_atomic_helper
+drm_atomic_helper->drm_atomic_helper:drm_atomic_helper_commit_planes()
+activate drm_atomic_helper
+drm_atomic_helper->plane_helper_funcs:vop_plane_atomic_update()
+deactivate drm_atomic_helper
+deactivate drm_atomic_helper
+deactivate drm_atomic_helper
+deactivate drm_atomic_helper
+
+
+
+
+note over DrmEventListener:**EVENT**
+DrmEventListener->libdrm:drmHandleEvent()
+activate libdrm
+libdrm->drm_file:drm_read()
+activate drm_file
+note over drm_file:**WAITING...**
+
+libdrm-->DrmEventListener:RET
+deactivate libdrm
+DrmEventListener->DrmEventListener:FlipHandler()
+activate DrmEventListener
+DrmEventListener->DrmHotplugHandler:HandleEvent()
+deactivate DrmEventListener
+deactivate DrmEventListener
+deactivate DrmEventListener
+deactivate DrmEventListener
+deactivate DrmEventListener
+DrmHotplugHandler->DrmHwcTwo:HandleDisplayHotplug()
+DrmHwcTwo->HwcHalImpl:hotplugHook()
+note left:**HwcCallback.func**
+
+rockchip_drm_vop->drm_vbalnk:drm_crtc_send_vblank_event()
+deactivate rockchip_drm_vop
+
+activate drm_vbalnk
+drm_vbalnk->drm_vbalnk:send_vblank_event()
+activate drm_vbalnk
+drm_vbalnk->drm_file:drm_send_event_locked()
+deactivate drm_vbalnk
+deactivate drm_vbalnk
+activate drm_file
+note over drm_file:**RESUME**
+drm_file-->libdrm:RET
+deactivate drm_file
+deactivate libdrm
+
+@enduml
