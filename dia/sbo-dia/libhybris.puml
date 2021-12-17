@@ -1,0 +1,185 @@
+@startuml libhybris
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #OrangeRed
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+participant camera
+participant dlfcn
+participant linker
+participant soinfo
+participant LoadTask
+participant ElfReader
+
+camera->dlfcn:android_dlopen()
+activate dlfcn
+dlfcn->dlfcn:__android_dlopen()
+activate dlfcn
+dlfcn->dlfcn:dlopen_ext()
+activate dlfcn
+dlfcn->linker:do_dlopen()
+deactivate dlfcn
+deactivate dlfcn
+deactivate dlfcn
+activate linker
+linker->linker:find_library()
+activate linker
+linker->linker:find_libraries()
+activate linker
+linker->linker:find_library_internal()
+activate linker
+linker->linker:load_library()
+activate linker
+linker->linker:open_library()
+activate linker
+linker->linker:open()
+activate linker
+deactivate linker
+deactivate linker
+linker->linker:load_library()
+activate linker
+deactivate linker
+linker->LoadTask:read()
+deactivate linker
+deactivate linker
+
+activate LoadTask
+LoadTask->ElfReader:Read()
+deactivate LoadTask
+activate ElfReader
+ElfReader->ElfReader:ReadElfHeader()
+activate ElfReader
+deactivate ElfReader
+ElfReader->ElfReader:VerifyElfHeader()
+activate ElfReader
+deactivate ElfReader
+ElfReader->ElfReader:ReadProgramHeaders()
+activate ElfReader
+deactivate ElfReader
+ElfReader->ElfReader:ReadSectionHeaders()
+activate ElfReader
+deactivate ElfReader
+ElfReader->ElfReader:ReadDynamicSection()
+activate ElfReader
+deactivate ElfReader
+deactivate ElfReader
+
+linker->LoadTask:load()
+activate LoadTask
+LoadTask->ElfReader:Load()
+deactivate LoadTask
+activate ElfReader
+ElfReader->ElfReader:ReserveAddressSpace()
+activate ElfReader
+deactivate ElfReader
+ElfReader->ElfReader:LoadSegments()
+activate ElfReader
+deactivate ElfReader
+ElfReader->ElfReader:FindPhdr()
+activate ElfReader
+deactivate ElfReader
+ElfReader-->soinfo:**COPY TO SOINFO**
+deactivate ElfReader
+
+linker->soinfo:prelink_image()
+activate soinfo
+soinfo->soinfo:phdr_table_get_dynamic_section()
+activate soinfo
+deactivate soinfo
+deactivate soinfo
+
+linker->soinfo:link_image()
+deactivate linker
+deactivate linker
+deactivate linker
+
+activate soinfo
+soinfo->soinfo:relocate()
+activate soinfo
+deactivate soinfo
+soinfo->soinfo:phdr_table_serialize_gnu_relro()
+activate soinfo
+deactivate soinfo
+soinfo->soinfo:phdr_table_map_gnu_relro()
+activate soinfo
+deactivate soinfo
+deactivate soinfo
+
+camera->dlfcn:android_dlsym()
+activate dlfcn
+dlfcn->dlfcn:__dlsym()
+activate dlfcn
+dlfcn->dlfcn:dlsym_impl()
+activate dlfcn
+dlfcn->linker:do_dlsym()
+deactivate dlfcn
+deactivate dlfcn
+deactivate dlfcn
+
+activate linker
+linker->linker:dlsym_linear_lookup()
+activate linker
+linker->soinfo:find_symbol_by_name()
+activate soinfo
+soinfo->soinfo:gnu_lookup()
+activate soinfo
+deactivate soinfo
+soinfo->soinfo:elf_lookup()
+activate soinfo
+deactivate soinfo
+deactivate soinfo
+deactivate soinfo
+
+linker->linker:dlsym_handle_lookup()
+activate linker
+linker->linker:walk_dependencies_tree()
+activate linker
+deactivate linker
+deactivate linker
+deactivate linker
+deactivate linker
+
+@enduml

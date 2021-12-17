@@ -1,0 +1,550 @@
+@startuml Telephony
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box Dialer
+participant "[FragmentActivity]\n[TransactionSafeFragmentActivity]\nInCallActivity" as InCallActivity
+participant DialerUtils
+participant TelecomUtil
+participant "Callback" as DialerCallback
+participant "Call" as DialerCall
+participant "InCallStateListener" as InCallStateListener
+participant CallList
+participant "[Listener]\nInCallPresenter" as InCallPresenter
+participant "[InCallService]\nInCallServiceImpl" as InCallServiceImpl
+participant Phone
+participant "[IInCallService]\n[Stub]\nInCallServiceBinder" as InCallServiceBinder
+participant "InCallAdapter" as DialerInCallAdapter
+endbox
+
+box Telecom
+participant "[IInCallAdapter]\n[Stub]InCallAdapter" as InCallAdapter
+participant ServiceConnection
+participant "[CallsManagerListener]\nInCallController" as InCallController
+
+participant "[ITelecomService]\n[Stub]\nTelecomServiceImpl" as TelecomServiceImpl
+participant UserCallIntentProcessor
+participant CallsManager
+participant Call
+participant CallIntentProcessor
+participant NewOutgoingCallIntentBroadcaster
+participant "[CreateConnectionResponse]\nCreateConnectionProcessor" as CreateConnectionProcessor
+participant ConnectionServiceWrapper
+participant "[IConnectionServiceAdapter]\nAdapter" as Adapter
+' participant ConnectionRequest
+participant BindCallback
+participant ServiceBinderConnection
+participant CreateConnectionResponse
+endbox
+
+box TeleService
+participant ConnectionServiceAdapter
+participant "[Service]\n[ConnectionService]\nTelephonyConnectionService" as TelephonyConnectionService
+participant "[Connection]\nTelephonyConnection" as TelephonyConnection
+participant PstnIncomingCallNotifier
+participant GsmCdmaPhone
+participant "[Handler]\n[CallTracker]\nGsmCdmaCallTracker" as GsmCdmaCallTracker
+participant "[CommandsInterface]\n[BaseCommands]\nRIL" as RIL
+endbox
+
+box RIL
+participant "[IRadio]\nRadioImpl" as RadioImpl
+participant RIL_RadioFunctions
+participant RegistrantList
+participant "[IIRadioIndication]\n[Stub]\nRadioIndication" as RadioIndication
+end box
+
+=== CALLING ==
+
+->DialerUtils:startActivityWithErrorToast()
+DialerUtils->TelecomUtil:placeCall()
+' TelecomUtil->TelecomManager:placeCall()
+TelecomUtil-->TelecomServiceImpl:placeCall()
+note left:**TelecomManager.placeCall()
+TelecomServiceImpl->UserCallIntentProcessor:processIntent()
+activate UserCallIntentProcessor
+UserCallIntentProcessor->UserCallIntentProcessor:processOutgoingCallIntent()
+activate UserCallIntentProcessor
+UserCallIntentProcessor->UserCallIntentProcessor:sendIntentToDestination()
+activate UserCallIntentProcessor
+UserCallIntentProcessor->CallIntentProcessor:processIntent()
+deactivate UserCallIntentProcessor
+deactivate UserCallIntentProcessor
+deactivate UserCallIntentProcessor
+activate CallIntentProcessor
+CallIntentProcessor->CallIntentProcessor:processOutgoingCallIntent
+activate CallIntentProcessor
+CallIntentProcessor->CallsManager:startOutgoingCall()
+
+activate CallsManager
+CallsManager-->Call:NEW
+CallsManager->CallsManager:addCall()
+activate CallsManager
+Call-->o CallsManager
+CallsManager->InCallController:onCallAdded()
+deactivate CallsManager
+deactivate CallsManager
+
+activate InCallController
+InCallController->InCallController:bindToServices()
+activate InCallController
+InCallController-->InCallServiceImpl:onBind()
+note left InCallServiceImpl: **CarSwappingInCallServiceConnection.connect()**
+activate InCallServiceImpl
+InCallServiceImpl-->InCallServiceBinder:NEW
+InCallServiceBinder-->InCallController:RET
+deactivate InCallController
+deactivate InCallController
+InCallServiceImpl-->InCallPresenter:getInstance()
+CallList-->o InCallPresenter:callList
+InCallServiceImpl->InCallPresenter:setUp()
+InCallPresenter-->o CallList:listeners
+InCallServiceImpl->InCallPresenter:onServiceBind()
+InCallServiceImpl->InCallPresenter:maybeStartRevealAnimation()
+activate InCallPresenter
+InCallPresenter-->InCallActivity:onCreate()
+note right:**MAYBE...**
+deactivate InCallPresenter
+
+InCallServiceImpl-->ServiceConnection:onConnected()
+deactivate InCallServiceImpl
+activate ServiceConnection
+ServiceConnection->ServiceConnection:onServiceConnected()
+activate ServiceConnection
+ServiceConnection-->InCallController:onConnected()
+deactivate ServiceConnection
+deactivate ServiceConnection
+activate InCallController
+InCallController-->InCallAdapter:NEW
+InCallController-->InCallServiceBinder:setInCallAdapter()
+activate InCallServiceBinder
+InCallServiceBinder-->DialerInCallAdapter:NEW
+InCallAdapter-->o DialerInCallAdapter:mAdapter
+InCallServiceBinder-->Phone:NEW
+DialerInCallAdapter-->o Phone:mInCallAdapter
+Phone-->o InCallServiceBinder:mPhone
+InCallServiceBinder->Phone:addListener()
+deactivate InCallServiceBinder
+InCallServiceImpl-->o Phone:mListeners
+note left: **Phone.Listener mPhoneListener**
+
+InCallController-->InCallServiceBinder:addCall()
+note left:BY **ParcelableCall**
+activate InCallServiceBinder
+InCallServiceBinder->Phone:internalAddCall()
+deactivate InCallServiceBinder
+activate Phone
+Phone-->DialerCall:NEW
+Call<[#Blue]-DialerCall:<font color=blue>**BINDER**</font>
+Phone->InCallServiceImpl:onCallAdded()
+deactivate Phone
+activate InCallServiceImpl
+InCallServiceImpl->InCallPresenter:onCallAdded()
+deactivate InCallServiceImpl
+activate InCallPresenter
+InCallPresenter->CallList:onCallAdded()
+deactivate InCallPresenter
+activate CallList
+CallList->CallList:onUpdateCall()
+CallList->CallList:notifyGenericListeners()
+activate CallList
+CallList->InCallPresenter:onCallListChange()
+deactivate CallList
+deactivate CallList
+activate InCallPresenter
+InCallPresenter->InCallPresenter:startOrFinishUi()
+activate InCallPresenter
+InCallPresenter->InCallPresenter:showInCall()
+activate InCallPresenter
+InCallPresenter-->InCallActivity:onCreate()
+note right:**showCallUi**
+deactivate InCallPresenter
+deactivate InCallPresenter
+InCallPresenter->InCallStateListener:onStateChange()
+deactivate InCallPresenter
+
+InCallController-->InCallServiceBinder:onCallAudioStateChanged()
+InCallController-->InCallServiceBinder:onCanAddCallChanged()
+deactivate InCallController
+
+
+CallIntentProcessor->NewOutgoingCallIntentBroadcaster:processCall()
+deactivate CallIntentProcessor
+deactivate CallIntentProcessor
+activate NewOutgoingCallIntentBroadcaster
+NewOutgoingCallIntentBroadcaster->NewOutgoingCallIntentBroadcaster:broadcastIntent()
+activate NewOutgoingCallIntentBroadcaster
+NewOutgoingCallIntentBroadcaster->NewOutgoingCallIntentBroadcaster:placeOutgoingCallImmediately()
+note left:**NewOutgoingCallBroadcastIntentReceiver.onReceive()**
+NewOutgoingCallIntentBroadcaster-->TelecomServiceImpl:RET
+TelecomServiceImpl-->DialerUtils:RET
+activate NewOutgoingCallIntentBroadcaster
+NewOutgoingCallIntentBroadcaster->CallsManager:placeOutgoingCall()
+deactivate NewOutgoingCallIntentBroadcaster
+deactivate NewOutgoingCallIntentBroadcaster
+deactivate NewOutgoingCallIntentBroadcaster
+activate CallsManager
+CallsManager->Call:addListener()
+CallsManager-->o Call:mListeners
+CallsManager->Call:startCreateConnection()
+deactivate CallsManager
+Call-->CreateConnectionProcessor:NEW
+Call->CreateConnectionProcessor:process
+activate CreateConnectionProcessor
+CreateConnectionProcessor->CreateConnectionProcessor:attemptNextPhoneAccount()
+activate CreateConnectionProcessor
+CreateConnectionProcessor->ConnectionServiceWrapper:createConnection()
+deactivate CreateConnectionProcessor
+deactivate CreateConnectionProcessor
+Adapter-->o ConnectionServiceWrapper:mAdapter
+ConnectionServiceWrapper-->BindCallback:NEW
+ConnectionServiceWrapper-->TelephonyConnectionService:onBind()
+ConnectionServiceAdapter-->o TelephonyConnectionService:mAdapter
+activate TelephonyConnectionService
+note over TelephonyConnectionService:**BINDING...**
+TelephonyConnectionService-->ServiceBinderConnection:onServiceConnected()
+deactivate TelephonyConnectionService
+activate ServiceBinderConnection
+ServiceBinderConnection->ServiceBinderConnection:setBinder()
+activate ServiceBinderConnection
+ServiceBinderConnection->ServiceBinderConnection:setServiceInterface()
+activate ServiceBinderConnection
+ServiceBinderConnection->ServiceBinderConnection:addConnectionServiceAdapter()
+activate ServiceBinderConnection
+ServiceBinderConnection-->TelephonyConnectionService:addConnectionServiceAdapter()
+note right:**MSG_ADD_CONNECTION_SERVICE_ADAPTER**
+deactivate ServiceBinderConnection
+deactivate ServiceBinderConnection
+deactivate ServiceBinderConnection
+activate TelephonyConnectionService
+TelephonyConnectionService->ConnectionServiceAdapter:addAdapter()
+deactivate TelephonyConnectionService
+Adapter-->o ConnectionServiceAdapter:mAdapters
+
+ServiceBinderConnection->ServiceBinderConnection:handleSuccessfulConnection()
+activate ServiceBinderConnection
+ServiceBinderConnection->BindCallback:onSuccess()
+deactivate ServiceBinderConnection
+deactivate ServiceBinderConnection
+activate BindCallback
+' BindCallback-->ConnectionRequest:NEW
+BindCallback-->TelephonyConnectionService:createConnection()
+note right:**MSG_CREATE_CONNECTION**
+deactivate BindCallback
+activate TelephonyConnectionService
+TelephonyConnectionService->TelephonyConnectionService:onCreateOutgoingConnection()
+activate TelephonyConnectionService
+TelephonyConnectionService-->TelephonyConnection:NEW
+TelephonyConnectionService->TelephonyConnectionService:placeOutgoingConnection()
+activate TelephonyConnectionService
+TelephonyConnectionService->GsmCdmaPhone:dial()
+deactivate TelephonyConnectionService
+deactivate TelephonyConnectionService
+GsmCdmaPhone->GsmCdmaCallTracker:dial()
+activate GsmCdmaCallTracker
+GsmCdmaCallTracker->GsmCdmaCallTracker:dialCdma()
+activate GsmCdmaCallTracker
+GsmCdmaCallTracker->RIL:dial()
+deactivate GsmCdmaCallTracker
+deactivate GsmCdmaCallTracker
+RIL-->RadioImpl:dial()
+RadioImpl->RIL_RadioFunctions:onRequest()
+
+TelephonyConnectionService->ConnectionServiceAdapter:handleCreateConnectionComplete()
+deactivate TelephonyConnectionService
+ConnectionServiceAdapter-->Adapter:handleCreateConnectionComplete()
+activate Adapter
+Adapter->ConnectionServiceWrapper:handleCreateConnectionComplete()
+ConnectionServiceWrapper->CreateConnectionProcessor:handleCreateConnectionSuccess()
+CreateConnectionProcessor->Call:handleCreateConnectionSuccess()
+Call->CallsManager:onSuccessfulOutgoingCall()
+CallsManager->InCallController:onConnectionServiceChanged()
+activate InCallController
+InCallController->InCallController:updateCall()
+activate InCallController
+InCallController-->InCallServiceBinder:updateCall()
+note left:**MSG_UPDATE_CALL**
+deactivate InCallController
+deactivate InCallController
+InCallServiceBinder->Phone:internalUpdateCall()
+Phone->DialerCall:internalUpdate()
+DialerCall->DialerCallback:onStateChanged()
+' DialerCallback->CallCardPresenter:
+
+Adapter-->TelephonyConnectionService:handleCreateConnectionComplete()
+deactivate Adapter
+
+
+=== INCALLING ==
+RadioIndication-->o RIL:mRadioIndication
+RadioIndication<--:callStateChanged
+activate RadioIndication
+RadioIndication->RIL:processIndication()
+RadioIndication->RegistrantList:notifyRegistrants()
+deactivate RadioIndication
+activate RegistrantList
+RegistrantList-->GsmCdmaCallTracker:handleMessage()
+note right:**EVENT_CALL_STATE_CHANGE**
+deactivate RegistrantList
+activate GsmCdmaCallTracker
+GsmCdmaCallTracker->GsmCdmaCallTracker:pollCallsWhenSafe()
+activate GsmCdmaCallTracker
+GsmCdmaCallTracker->GsmCdmaCallTracker:handleMessage()
+note right:**EVENT_POLL_CALLS_RESULT**
+activate GsmCdmaCallTracker
+GsmCdmaCallTracker->GsmCdmaCallTracker:handlePollCalls()
+activate GsmCdmaCallTracker
+GsmCdmaCallTracker->GsmCdmaPhone:notifyNewRingingConnection()
+deactivate GsmCdmaCallTracker
+deactivate GsmCdmaCallTracker
+GsmCdmaPhone->PstnIncomingCallNotifier:handleMessage()
+note right:**EVENT_NEW_RINGING_CONNECTION**
+activate PstnIncomingCallNotifier
+PstnIncomingCallNotifier->PstnIncomingCallNotifier:handleNewRingingConnection()
+activate PstnIncomingCallNotifier
+PstnIncomingCallNotifier->PstnIncomingCallNotifier:sendIncomingCallIntent()
+activate PstnIncomingCallNotifier
+PstnIncomingCallNotifier-->TelecomServiceImpl:addNewIncomingCall()
+note right:TelecomManager.addNewIncomingCall()
+deactivate PstnIncomingCallNotifier
+deactivate PstnIncomingCallNotifier
+deactivate PstnIncomingCallNotifier
+activate TelecomServiceImpl
+TelecomServiceImpl->CallIntentProcessor:processIncomingCallIntent()
+deactivate TelecomServiceImpl
+CallIntentProcessor->CallsManager:processIncomingCallIntent()
+activate CallsManager
+CallsManager-->Call:NEW
+CallsManager->Call:startCreateConnection()
+deactivate CallsManager
+activate Call
+Call-->CreateConnectionProcessor:NEW
+Call->CreateConnectionProcessor:process()
+deactivate Call
+activate CreateConnectionProcessor
+CreateConnectionProcessor->CreateConnectionProcessor:attemptNextPhoneAccount()
+activate CreateConnectionProcessor
+CreateConnectionProcessor->ConnectionServiceWrapper:createConnection()
+deactivate CreateConnectionProcessor
+deactivate CreateConnectionProcessor
+Adapter-->o ConnectionServiceWrapper:mAdapter
+ConnectionServiceWrapper-->BindCallback:NEW
+ConnectionServiceWrapper-->TelephonyConnectionService:onBind()
+ConnectionServiceAdapter-->o TelephonyConnectionService:mAdapter
+activate TelephonyConnectionService
+note over TelephonyConnectionService:**BINDING...**
+TelephonyConnectionService-->ServiceBinderConnection:onServiceConnected()
+deactivate TelephonyConnectionService
+activate ServiceBinderConnection
+ServiceBinderConnection->ServiceBinderConnection:setBinder()
+activate ServiceBinderConnection
+ServiceBinderConnection->ServiceBinderConnection:setServiceInterface()
+activate ServiceBinderConnection
+ServiceBinderConnection->ServiceBinderConnection:addConnectionServiceAdapter()
+activate ServiceBinderConnection
+ServiceBinderConnection-->TelephonyConnectionService:addConnectionServiceAdapter()
+note right:**MSG_ADD_CONNECTION_SERVICE_ADAPTER**
+deactivate ServiceBinderConnection
+deactivate ServiceBinderConnection
+deactivate ServiceBinderConnection
+activate TelephonyConnectionService
+TelephonyConnectionService->ConnectionServiceAdapter:addAdapter()
+deactivate TelephonyConnectionService
+Adapter-->o ConnectionServiceAdapter:mAdapters
+
+ServiceBinderConnection->ServiceBinderConnection:handleSuccessfulConnection()
+activate ServiceBinderConnection
+ServiceBinderConnection->BindCallback:onSuccess()
+deactivate ServiceBinderConnection
+deactivate ServiceBinderConnection
+activate BindCallback
+' BindCallback-->ConnectionRequest:NEW
+BindCallback-->TelephonyConnectionService:createConnection()
+note right:**MSG_CREATE_CONNECTION**
+deactivate BindCallback
+activate TelephonyConnectionService
+TelephonyConnectionService->TelephonyConnectionService:onCreateOutgoingConnection()
+activate TelephonyConnectionService
+TelephonyConnectionService-->TelephonyConnection:NEW
+TelephonyConnectionService->TelephonyConnectionService:placeOutgoingConnection()
+activate TelephonyConnectionService
+TelephonyConnectionService->GsmCdmaPhone:dial()
+deactivate TelephonyConnectionService
+deactivate TelephonyConnectionService
+GsmCdmaPhone->GsmCdmaCallTracker:dial()
+activate GsmCdmaCallTracker
+GsmCdmaCallTracker->GsmCdmaCallTracker:dialCdma()
+activate GsmCdmaCallTracker
+GsmCdmaCallTracker->RIL:dial()
+deactivate GsmCdmaCallTracker
+deactivate GsmCdmaCallTracker
+RIL-->RadioImpl:dial()
+RadioImpl->RIL_RadioFunctions:onRequest()
+
+TelephonyConnectionService->ConnectionServiceAdapter:handleCreateConnectionComplete()
+deactivate TelephonyConnectionService
+ConnectionServiceAdapter-->Adapter:handleCreateConnectionComplete()
+activate Adapter
+Adapter->ConnectionServiceWrapper:handleCreateConnectionComplete()
+ConnectionServiceWrapper->CreateConnectionProcessor:handleCreateConnectionSuccess()
+CreateConnectionProcessor->Call:handleCreateConnectionSuccess()
+Call->CallsManager:onSuccessfulIncomingCall()
+activate CallsManager
+CallsManager->CallsManager:addCall()
+
+CallsManager->CallsManager:addCall()
+activate CallsManager
+Call-->o CallsManager
+CallsManager->InCallController:onCallAdded()
+deactivate CallsManager
+
+activate InCallController
+InCallController->InCallController:bindToServices()
+activate InCallController
+InCallController-->InCallServiceImpl:onBind()
+note left InCallServiceImpl: **CarSwappingInCallServiceConnection.connect()**
+activate InCallServiceImpl
+InCallServiceImpl-->InCallServiceBinder:NEW
+InCallServiceBinder-->InCallController:RET
+deactivate InCallController
+deactivate InCallController
+InCallServiceImpl-->InCallPresenter:getInstance()
+CallList-->o InCallPresenter:callList
+InCallServiceImpl->InCallPresenter:setUp()
+InCallPresenter-->o CallList:listeners
+InCallServiceImpl->InCallPresenter:onServiceBind()
+InCallServiceImpl->InCallPresenter:maybeStartRevealAnimation()
+activate InCallPresenter
+InCallPresenter-->InCallActivity:onCreate()
+note right:**MAYBE...**
+deactivate InCallPresenter
+
+InCallServiceImpl-->ServiceConnection:onConnected()
+deactivate InCallServiceImpl
+activate ServiceConnection
+ServiceConnection->ServiceConnection:onServiceConnected()
+activate ServiceConnection
+ServiceConnection-->InCallController:onConnected()
+deactivate ServiceConnection
+deactivate ServiceConnection
+activate InCallController
+InCallController-->InCallAdapter:NEW
+InCallController-->InCallServiceBinder:setInCallAdapter()
+activate InCallServiceBinder
+InCallServiceBinder-->DialerInCallAdapter:NEW
+InCallAdapter-->o DialerInCallAdapter:mAdapter
+InCallServiceBinder-->Phone:NEW
+DialerInCallAdapter-->o Phone:mInCallAdapter
+Phone-->o InCallServiceBinder:mPhone
+InCallServiceBinder->Phone:addListener()
+deactivate InCallServiceBinder
+InCallServiceImpl-->o Phone:mListeners
+note left: **Phone.Listener mPhoneListener**
+
+InCallController-->InCallServiceBinder:addCall()
+note left:BY **ParcelableCall**
+activate InCallServiceBinder
+InCallServiceBinder->Phone:internalAddCall()
+deactivate InCallServiceBinder
+activate Phone
+Phone-->DialerCall:NEW
+Call<[#Blue]-DialerCall:<font color=blue>**BINDER**</font>
+Phone->InCallServiceImpl:onCallAdded()
+deactivate Phone
+activate InCallServiceImpl
+InCallServiceImpl->InCallPresenter:onCallAdded()
+deactivate InCallServiceImpl
+activate InCallPresenter
+InCallPresenter->CallList:onCallAdded()
+deactivate InCallPresenter
+activate CallList
+CallList->CallList:onUpdateCall()
+CallList->CallList:notifyGenericListeners()
+activate CallList
+CallList->InCallPresenter:onCallListChange()
+deactivate CallList
+deactivate CallList
+activate InCallPresenter
+InCallPresenter->InCallPresenter:startOrFinishUi()
+activate InCallPresenter
+InCallPresenter->InCallPresenter:showInCall()
+activate InCallPresenter
+InCallPresenter-->InCallActivity:onCreate()
+note right:**showCallUi**
+deactivate InCallPresenter
+deactivate InCallPresenter
+InCallPresenter->InCallStateListener:onStateChange()
+deactivate InCallPresenter
+
+InCallController-->InCallServiceBinder:onCallAudioStateChanged()
+InCallController-->InCallServiceBinder:onCanAddCallChanged()
+deactivate InCallController
+
+
+
+CallsManager->InCallController:onConnectionServiceChanged()
+deactivate CallsManager
+activate InCallController
+InCallController->InCallController:updateCall()
+activate InCallController
+InCallController-->InCallServiceBinder:updateCall()
+note left:**MSG_UPDATE_CALL**
+deactivate InCallController
+deactivate InCallController
+InCallServiceBinder->Phone:internalUpdateCall()
+Phone->DialerCall:internalUpdate()
+DialerCall->DialerCallback:onStateChanged()
+
+Adapter-->TelephonyConnectionService:handleCreateConnectionComplete()
+deactivate Adapter
+
+GsmCdmaCallTracker->RIL:getCurrentCalls()
+deactivate GsmCdmaCallTracker
+deactivate GsmCdmaCallTracker
+
+@enduml

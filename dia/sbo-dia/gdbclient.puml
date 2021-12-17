@@ -1,0 +1,228 @@
+@startuml gdbclient
+ 
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #OrangeRed
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+ 
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+participant gdbclient
+participant gdbrunner
+participant AndroidDevice
+participant subprocess
+participant device
+participant ArgumentParser
+
+->gdbclient:do_main()
+activate gdbclient
+gdbclient->gdbclient:parse_args()
+activate gdbclient
+create ArgumentParser
+gdbclient-->ArgumentParser:NEW
+gdbclient->ArgumentParser:add_argument_group()
+gdbclient->ArgumentParser:...
+gdbclient->ArgumentParser:parse_args()
+deactivate gdbclient
+activate ArgumentParser
+create subprocess
+ArgumentParser->subprocess:check_output()
+note right:**adb**
+
+create device
+ArgumentParser->device:get_device()
+deactivate ArgumentParser
+activate device
+device->device:_get_device_by_serial()
+activate device
+device->device:get_devices()
+activate device
+device->subprocess:check_call()
+note right: **adb start-server**
+device->subprocess:check_output()
+note right: **adb devices**
+
+create AndroidDevice
+device-->AndroidDevice:NEW
+deactivate device
+deactivate device
+deactivate device
+
+gdbclient->gdbclient:handle_switches()
+activate gdbclient
+gdbclient->gdbclient:get_remote_pid()
+create gdbrunner
+gdbclient->gdbrunner:get_processes()
+gdbrunner->AndroidDevice:shell()
+activate AndroidDevice
+AndroidDevice->AndroidDevice:shell_nocheck()
+activate AndroidDevice
+AndroidDevice->AndroidDevice:_subprocess_Popen()
+activate AndroidDevice
+AndroidDevice->subprocess:Popen()
+deactivate AndroidDevice
+deactivate AndroidDevice
+deactivate AndroidDevice
+
+gdbclient->gdbrunner:find_binary()
+activate gdbrunner
+gdbrunner->gdbrunner:find_file()
+activate gdbrunner
+gdbrunner->gdbrunner:generate_files()
+activate gdbrunner
+gdbrunner->AndroidDevice:shell()
+note right:{EXE_PATH} = **readlink -e -n /proc/**{PID}**/exe**
+gdbrunner->AndroidDevice:shell()
+note right:**cat **{EXE_PATH}** >  /data/local/tmp/gdbclient-binary-**{PID}
+gdbrunner->AndroidDevice:pull()
+note right:adb pull **/data/local/tmp/gdbclient-binary-**{PID}
+gdbrunner->gdbclient:RET
+note right: (**/data/local/tmp/gdbclient-binary-**{PID}, True)
+deactivate gdbrunner
+deactivate gdbrunner
+deactivate gdbrunner
+
+gdbclient->gdbrunner:get_binary_arch()
+gdbclient->gdbclient:read_toolchain_config()
+activate gdbclient
+gdbclient->gdbclient:read()
+note right:build/soong/cc/config/global.go:ClangDefaultBase&ClangDefaultVersion
+activate gdbclient
+deactivate gdbclient
+deactivate gdbclient
+
+gdbclient->gdbrunner:get_binary_interp()
+note right:toolchain_path:{ClangDefaultBase}/linux-x86/{ClangDefaultVersion}/\n\
+llvm_readobj_path={ClangDefaultBase}/linux-x86/{ClangDefaultVersion}/bin/llvm-readobj
+activate gdbrunner
+gdbrunner->subprocess:check_output()
+note right:{TOOLCHAIN}/bin/llvm-readobj --elf-output-style=GNU -l gdbclient-binary-**{PID}\n\
+interp=**/system/bin/linker**
+deactivate gdbrunner
+
+gdbclient->gdbclient:ensure_linker()
+activate gdbclient
+gdbclient->AndroidDevice:shell()
+note right:**mkdir /tmp/gdbclient-linker-XXX**
+gdbclient->AndroidDevice:shell()
+note right:**cp /system/bin/linker /tmp/gdbclient-linker-XXX/**
+gdbclient->AndroidDevice:pull()
+note right:adb pull **/tmp/gdbclient-linker-XXX/linker**
+deactivate gdbclient
+
+gdbclient->gdbclient:get_tracer_pid()
+activate gdbclient
+gdbclient->AndroidDevice:shell()
+note right:**grep -e ^TracerPid: /proc/{PID}/status**
+deactivate gdbclient
+
+gdbclient->gdbclient:get_gdbserver_path()
+note right:prebuilts/misc/gdbserver/android-{ARCH}/gdbserver{64?}
+activate gdbclient
+deactivate gdbclient
+
+gdbclient->gdbrunner:start_gdbserver()
+activate gdbrunner
+gdbrunner->AndroidDevice:shell()
+note right:**rm /data/local/tmp/debug_socket**
+gdbrunner->AndroidDevice:push()
+note right:adb push prebuilts/misc/gdbserver/android-{ARCH}/gdbserver{64?} **/data/local/tmp/{ARCH}-gdbserver**
+
+gdbrunner->AndroidDevice:shell()
+note right:**/data/local/tmp/{ARCH}-gdbserver --once +unix:///data/local/tmp/debug_socket --attach {PID}**
+deactivate gdbrunner
+
+gdbclient->gdbrunner:forward_gdbserver_port()
+activate gdbrunner
+gdbrunner->AndroidDevice:forward()
+note right:adb forward tcp:{PORT} tcp:{PORT}
+deactivate gdbrunner 
+
+gdbclient->gdbclient:generate_setup_script()
+activate gdbclient
+note right:solib_search_path=[XXX, YYY]\n\
+debugger_path=prebuilts/gdb/linux-x86/bin/gdb
+
+gdbclient->gdbclient:generate_vscode_script()
+activate gdbclient
+note right:**Generate VSCode launch.json:**\n\
+{\n\
+    "name": "(gdbclient.py) Attach {} (port: {PORT})",\n\
+    "type": "cppdbg",\n\
+    "request": "launch",  # Needed for gdbserver.\n\
+     "cwd": [TOPDIR],\n\
+     "program": gdbclient-binary-{PID},\n\
+     "MIMode": "gdb",\n\
+     "miDebuggerServerAddress": "localhost:{PORT}",\n\
+     "miDebuggerPath": prebuilts/gdb/linux-x86/bin/gdb,\n\
+     "setupCommands": [\n\
+        {\n\
+            # Required for vscode.\n\
+            "description": "Enable pretty-printing for gdb",\n\
+            "text": "-enable-pretty-printing",\n\
+            "ignoreFailures": True,\n\
+        },\n\
+        {\n\
+            "description": "gdb command: dir",\n\
+            "text": "-environment-directory {TOPDIR}",\n\
+            "ignoreFailures": False\n\
+        },\n\
+        {\n\
+            "description": "gdb command: set solib-search-path",\n\
+            "text": "-gdb-set solib-search-path {solib_search_path}"),\n\
+            "ignoreFailures": False\n\
+        },\n\
+        {\n\
+            "description": "gdb command: set solib-absolute-prefix",\n\
+            "text": "-gdb-set solib-absolute-prefix {SYSROOT}",\n\
+            "ignoreFailures": False\n\
+        },\n\
+    ]\n\
+}
+
+deactivate gdbclient
+deactivate gdbclient
+deactivate gdbclient
+deactivate gdbclient
+
+@enduml
