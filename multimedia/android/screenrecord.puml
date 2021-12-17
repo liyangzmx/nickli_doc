@@ -1,0 +1,171 @@
+@startuml SurfaceTexture
+
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+box Encode
+participant MediaMuxer
+participant MediaCodec
+participant IGraphicBufferProducer
+end box
+participant screenrecord
+box Renderer
+participant EglWindow
+participant Program
+participant GLConsumer
+end box
+
+box Projection
+participant Overlay
+participant IGBC
+participant IGBP
+participant SurfaceComposerClient
+end box
+
+->screenrecord:recordScreen()
+activate screenrecord
+screenrecord->screenrecord:prepareEncoder()
+activate screenrecord
+create MediaCodec
+screenrecord-->MediaCodec:**<NEW>**
+screenrecord->MediaCodec:configure
+screenrecord->MediaCodec:createInputSurface()
+create IGraphicBufferProducer
+MediaCodec-->IGraphicBufferProducer:RET
+screenrecord->MediaCodec:start()
+deactivate screenrecord
+
+create Overlay
+screenrecord-->Overlay:**<NEW>**
+create EglWindow
+Overlay-->EglWindow:**<NEW>**
+EglWindow-->Overlay:mEglWindow
+create Program
+Overlay-->Program:**<NEW>**
+Program-->o Overlay:mExtTexProgram
+
+screenrecord->Overlay:start()
+activate Overlay
+IGraphicBufferProducer-->o Overlay:mOutputSurface
+Overlay->Overlay:run()
+activate Overlay
+deactivate Overlay
+
+note over Overlay:**mStartCond.wait...**
+Overlay->Overlay:threadLoop()
+activate Overlay #Yellow
+Overlay->Overlay:setup_l()
+activate Overlay #Yellow
+Overlay->EglWindow:createWindow()
+IGraphicBufferProducer-->EglWindow:**SET_OUTPUT**
+Overlay->EglWindow:makeCurrent()
+Overlay->Program:setup()
+
+Overlay->Overlay:glGenTextures()
+create IGBP
+Overlay-->IGBP:**<NEW>**
+note left:BufferQueue::createBufferQueue()
+IGBP-->o Overlay:mProducer
+create IGBC
+Overlay-->IGBC:**<NEW>**
+note left:BufferQueue::createBufferQueue()
+create GLConsumer
+Overlay-->GLConsumer:**<NEW>**
+IGBC-->o GLConsumer:**<SET>**
+GLConsumer-->o Overlay:mGLConsumer
+Overlay->GLConsumer:setFrameAvailableListener()
+Overlay-->o GLConsumer:mListener
+deactivate Overlay
+note over Overlay:**mStartCond.broadcast...**
+deactivate Overlay
+Overlay-->screenrecord:RET
+note over Overlay:**mEventCond.wait...**
+deactivate Overlay
+
+screenrecord->screenrecord:prepareVirtualDisplay()
+activate screenrecord
+create SurfaceComposerClient
+screenrecord->SurfaceComposerClient:createDisplay()
+screenrecord->SurfaceComposerClient:setDisplaySurface()
+IGBP-->o SurfaceComposerClient:**<SET>**
+screenrecord->screenrecord:setDisplayProjection()
+activate screenrecord
+screenrecord->SurfaceComposerClient:setDisplayProjection()
+deactivate screenrecord
+' SurfaceComposerClient-->screenrecord:**dpy**
+
+create MediaMuxer
+screenrecord-->MediaMuxer:**<NEW>**
+screenrecord->screenrecord:runEncoder()
+activate screenrecord
+screenrecord->MediaCodec:getOutputBuffers()
+
+SurfaceComposerClient->IGBP:**<onFrameAvailable>**
+IGBP->IGBC:**<onFrameAvailable>**
+IGBC->Overlay:onFrameAvailable()
+note over Overlay:**mEventCond.signal**
+Overlay->Overlay:processFrame_l()
+activate Overlay #Yellow
+Overlay->GLConsumer:updateTexImage()
+Overlay->GLConsumer:getTransformMatrix()
+Overlay->Program:blit()
+deactivate Overlay
+deactivate Overlay
+Program-->EglWindow:**<RENDER>**
+EglWindow->IGraphicBufferProducer:**<onFrameAvailable>**
+IGraphicBufferProducer-->MediaCodec:**<queueInputBuffer>**
+
+group while
+screenrecord->MediaCodec:dequeueOutputBuffer()
+screenrecord->MediaMuxer:writeSampleData()
+screenrecord->MediaCodec:releaseOutputBuffer()
+deactivate screenrecord
+deactivate screenrecord
+deactivate screenrecord
+end group
+
+@enduml

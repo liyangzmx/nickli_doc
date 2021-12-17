@@ -1,0 +1,108 @@
+@startuml DRM
+
+hide footbox
+skinparam {
+    ' defaultFontName Abyssinica SIL
+    Shadowing false  
+    backgroundColor white
+    NoteFontColor #Black
+    NoteFontSize 16
+    NoteTextAlignment left
+    NoteBackgroundColor WhiteSmoke
+    NoteColor transparent
+    NoteBorderThickness 0
+    NoteBorderColor transparent
+    NoteBorderThickness 0
+    NoteShadowing false
+    ParticipantPadding 0
+    BoxPadding 20
+    dpi 96
+    ClassBackgroundColor transparent
+    ClassHeaderBackgroundColor lightgreen
+    ClassStereotypeFontColor transparent
+    SequenceBoxBordercolor sienna
+    SequenceBoxFontSize 24
+    SequenceBoxFontColor Black
+    SequenceBoxBackgroundColor WhiteSmoke
+    SequenceLifeLineBackgroundColor WhiteSmoke
+    SequenceMessageAlignment center
+    SequenceGroupHeaderFontColor White
+    SequenceGroupHeaderFontSize 20
+    SequenceGroupBackgroundColor DarkOliveGreen
+    SequenceGroupBodyBackgroundColor transparent
+    SequenceGroupBorderThickness 4
+    SequenceGroupBorderColor DarkOliveGreen
+    ' transparent
+    sequence {
+        ParticipantBackgroundColor WhiteSmoke
+        ParticipantBorderColor Gray
+        ParticipantFontStyle Bold
+        ParticipantFontSize 12
+        ParticipantPadding 0
+
+        LifeLineBorderColor DimGray
+        ArrowColor Black
+        ArrowThickness 0.8
+        ColorArrowSeparationSpace 30
+    }
+}
+
+participant QCamera2HardwareInterface
+participant mm_camera_interface
+participant mm_camera_obj_t
+participant mm_camera_cmd_thread
+participant cam_queue_t
+participant mm_camera_poll_thread
+
+->QCamera2HardwareInterface:openCamera()
+QCamera2HardwareInterface->mm_camera_interface:camera_open()
+activate mm_camera_interface
+mm_camera_interface-->mm_camera_obj_t:NEW
+mm_camera_interface->mm_camera_interface:mm_camera_open()
+activate mm_camera_interface
+mm_camera_interface->subdev:open()
+mm_camera_interface->mm_camera_interface:mm_camera_cmd_thread_launch()
+activate mm_camera_interface
+mm_camera_interface-->mm_camera_cmd_thread:NEW
+activate mm_camera_cmd_thread
+mm_camera_cmd_thread->mm_camera_cmd_thread:mm_camera_dispatch_app_event()
+activate mm_camera_cmd_thread
+mm_camera_cmd_thread->mm_camera_cmd_thread:cam_sem_wait()
+note over mm_camera_cmd_thread:**WAITING...**
+
+cam_queue_t-->o mm_camera_cmd_thread:cmd_queue
+deactivate mm_camera_interface
+
+mm_camera_interface->mm_camera_interface:mm_camera_poll_thread_launch()
+activate mm_camera_interface
+mm_camera_interface-->mm_camera_poll_thread:pthread_create()
+deactivate mm_camera_interface
+activate mm_camera_poll_thread
+mm_camera_poll_thread->mm_camera_poll_thread:mm_camera_poll_fn()
+activate mm_camera_poll_thread
+
+
+mm_camera_interface->mm_camera_interface:mm_camera_evt_sub()
+activate mm_camera_interface
+mm_camera_interface->subdev:ioctl()
+note right:**VIDIOC_SUBSCRIBE_EVENT**
+mm_camera_interface->mm_camera_poll_thread:mm_camera_poll_thread_add_poll_fd()
+note right:**mm_camera_event_notify**
+
+mm_camera_poll_thread->subdev:poll()
+note over subdev:**POLLING...**
+subdev-->mm_camera_poll_thread:v4l2_event
+mm_camera_poll_thread->mm_camera_poll_thread:mm_camera_event_notify()
+activate mm_camera_poll_thread
+mm_camera_poll_thread->mm_camera_poll_thread:mm_camera_enqueue_evt()
+mm_camera_poll_thread->cam_queue_t:cam_queue_enq()
+mm_camera_poll_thread-->mm_camera_cmd_thread:cmd_sem
+deactivate mm_camera_poll_thread
+deactivate mm_camera_poll_thread
+deactivate mm_camera_poll_thread
+
+note over mm_camera_cmd_thread:**RESUME**
+mm_camera_cmd_thread->cam_queue_t:cam_queue_deq()
+<--mm_camera_cmd_thread:**evt_cb**
+
+@enduml
