@@ -5,15 +5,15 @@
 \usepackage[utf8]{inputenc} 
 \usepackage{CJK}
 \recomputelengths 
-\setmainfont{FandolHei}
-\setsansfont{FandolHei}
+\setmainfont{Songti SC}
+\setsansfont{Songti SC}
 \CJKtilde
 
 \usepackage[scale=0.98]{geometry}
 \name{李}{杨}
-\title{Android系统软件开发}
-\phone[mobile]{\color{black}{\textbf{18513853385  18410197201}}}
-\email{liyangzmx@163.com}
+\title{底层软件开发}
+\phone[mobile]{\color{black}{\textbf{18513853385 18410197201}}}
+\email{1037905941@qq.com}
 \photo[64pt][0.4pt]{picture.png}
 
 \definecolor{lgreen}{HTML}{59b24c}
@@ -24,55 +24,108 @@
 \makecvtitle
 
 \section{个人信息}
-\cvitem{职位}{Android驱动工程师}
+\cvitem{职位}{软件开发}
 \cvitem{身高}{170cm}
 \cvitem{婚姻状态}{未婚}
 \cvitem{户口/国籍}{黑龙江省/中国}
-\cvitem{现住址}{北京市海淀区甘家口街道三虎桥南路17号东院1号楼1单元}
+\cvitem{现住址}{北京市}
 
 \section{个人优势}
-\cvitem{}{硬件终端开发经验，熟悉常用的芯片平台(Marvel/Atmel/Amlogic/MTK)及Android 系统的BSP/Multimedia
-熟练使用C/C++语言，熟悉Java;  熟悉部分低速硬件的设计原理( 数字/模拟 ), 熟悉常用的硬件接口协议.
-}
+\cvitem{编程语言经验}{C / C++ / Java / Python / Rust / Bash}
+\cvitem{DDS中间件经验}{FastCDR / FastDDS / Fast-DDS-Gen}
+\cvitem{音视频经验}{ffmpeg / ExoPlayer / ijkplayer / GStreamer / WebRTC}
+\cvitem{安全功能经验}{SecureBoot / AVB / dm-verity / SELinux / KeyStore / TEE(CA/TA)}
+\cvitem{系统构建经验}{Scratch Linux / Buildroot / OpenWRT / Yocto / Android O/Q/S}
+\cvitem{硬件平台经验}{熟悉常用的芯片平台(Marvel / Atmel / Amlogic / MTK / Rocchip)}
 
 \section{期望职位}
-\cvitem{Android 系统软件开发}{北京·\textbf{33K+}}
-\cvitem{}{通信/网络设备·移动互联网·电子/半导体/集成电路}
+\cvitem{底层软件开发}{北京}
+\cvitem{}{新能源汽车·移动互联网·通信 / 网络设备·电子 / 半导体 / 集成电路}
 
 \section{工作经验}
 \textcolor{lgreen}{\rule[-7pt]{20.5cm}{0.1em}}
-\subsection{Android (Multimedia)}
-\cventry{2020/6--今}{WYZE中国-北京研发中心}{北京爱和健康科技有限公司}{}{}{
+\subsection{软件开发/中间件}
+\cventry{2023/11--今}{算力-操作系统-应用服务}{理想汽车北京有限公司}{}{}{
 \textbf{工作描述：}
 \begin{itemize}
-   \item ffmpeg转码并保存DASH(H264 + G711)为MP4(H264 + AAC)
-   \item ExoPlayer + ffmpeg实现软解G711音频支持, 熟悉ExoPlayer的编解码器扩展
-   \item 完成ffmpeg高版本的交叉编译与集成(包括openh264/fdk-aac等), 配合GPUImage完成滤镜效果
-   \item 采取静态链接到libwebrtc.a的方式优化native库对WebRTC的设置和尺寸.
-   \item 通过WebRTC的SurfaceViewRenderer实现RTC画面的缩放(OpenGL)
-   \item GStreamer \& WebRTC插件RTC推流demo(Android App)
-   \item 熟悉: ijkplayer/ExoPlayer/MediaPlayer/MeidaCodec/OMX IL/AudioFlinger/AudioPolicy等
-   \item 熟悉NDK相关的开发流程, 熟悉Android Natvie代码的调试, 熟悉Framework的Java层调试
+   \item DDS 中间件相关开发, ShareMemory 适配 / 业务需求接口开发
+   \item C / Rust / Java 多语言下动态类型 / 数据的接口开发
+   \item C / Rust 多语言静态数据类型的代码生成器开发
 \end{itemize}
 \textbf{项目经验:}
 \begin{itemize}
-\item WYZE App(Android)
+\item 自研 DDS 中间件相关开发
    \begin{itemize}
-      \item Camera相关插件, 与WebRTC技术有关的实现
-      \item 部分NDK底层的数据加密/解密实现(基于libopenssl加密解密等)
-      \item 部分NDK底层编解码库的集成(基于ffmpeg等)
-      \item 新技术的调研:基于ExoPlayer的网络流播放器
-      \item 基于GStramer(for Android)的下一代播放器调研
-      \item 部分关于App的Jenkins打包Pipeline脚本(Groovy)编写
+      \item 基于 Posix ShareMemory 的 DataWriter / DataReader 数据传输实现
+      \item 自研 DDS 的动态类型 / 数据 java 接口封装, AndroidTests 测试用例开发
+      \item 自研 DDS 通信接口 / 动态类型 / 动态数据到自研 DDS 的 rust FFI接口封装, 测试用例开发 
+      \item 自研 DDS RPC Rust 语言接口封装, 测试用例开发, 与自研 DDS 的集成测试
+      \item 基于 rust proc\_macro 宏, 支持从 Rust 数据结构生成构造动态数据类型的 rust 源码
+      \item 基于 IDLParser / ST4 的 IDL 静态数据类型 C / Rust 代码生成器开发
+      \item 熟悉 Antlr4 语法解析器在 C++ / Java / Pyhon环境的使用, 了解 IDLParser 的实现原理
+      \item 熟悉 conan 包制作, 熟悉 cmake 构建系统
+   \end{itemize}
+\end{itemize}
+}
+
+\subsection{Android BSP/Security}
+\cventry{2022/12--2023/11}{数字座舱-系统软件部}{蔚来汽车北京有限公司}{}{}{
+   \textbf{工作描述：}
+   \begin{itemize}
+      \item 系统软件开发 / 业务软件集成 / ROM构建 / 厂包与OTA本发布
+      \item 系统安全与数字安全的实施
+   \end{itemize}
+   \textbf{项目经验: }
+   \begin{itemize}
+      \item XR 盒子 / 眼镜
+      \begin{itemize}
+         \item 负责硬件项目系统安全
+         \begin{itemize}
+            \item 负责: SecureBoot / AVB / OP-TEE 的在线签名实现, TEE 移植与开发, Android
+            KeyStore SDK / Frameworks / HAL / TA 各层的适配与开发
+         \end{itemize}
+         \item 负责硬件项目数字安全
+         \begin{itemize}
+            \item 熟练掌握: Android KeyStore / BouncyCastle / IKIA / OpenSSL 1.1 / OpenSSL 3.0 / MbedTLS / librkcrypto
+            \item 精通: 密钥生成 / 秘钥派生 / 秘钥交换 / 生成CSR/ CERT签发 / 常用Digest / 常用Cipher
+            \item 熟悉: OkHTTP / Netty / libcurl 实现 TLS/ MTLS v1.2/v1.3 连接
+            \item 熟悉: Rust 在 Android 中开发安全服务 使用 reqwest 配合 openssl实现 MTLS
+            \item 熟悉 openssl / JSSE / rustls 与 可信环境的配合, 例如TPM2.0(c-lib) / OP-TEE系统
+            \item 熟悉 CCC3.0 SPAKE2+ 配对原理
+         \end{itemize}
+      \end{itemize}
+   \end{itemize}
+}
+
+\subsection{Android (HW/SDK)}
+\cventry{2020/6--2022/12}{创新硬件部/流媒体部}{作业帮教育科技(北京)有限公司}{}{}{
+\textbf{工作描述：}
+\begin{itemize}
+   \item 智能硬件系统 ROM 开发与集成
+   \item 自研播放器 / RTC业务硬解码支持(AMediaCodec)
+   \item 自研播放器 / RTC业务渲染器实现(使用OpenGL支持滤镜)
+\end{itemize}
+\textbf{项目经验: }
+\begin{itemize}
+   \item 智能硬件产品
+   \begin{itemize}
+      \item 扫提笔系统驱动软件集成, 包括但不限于 Touch/Display/Audio/Camera 等
+      \item 基于 Yocto Build 的 ROM 发行版及工具链
+      \item 扫提笔系统软件 CI 系统(基于 Jenkins 与 Docker 的分布式构建服务端)
+   \end{itemize}
+   \item App 产品
+   \begin{itemize}
+      \item 直播课 app 音视频 SDK
+      \item 作业帮 app 音视频 SDK
    \end{itemize}
 \end{itemize}
 }
 
 \subsection{Android BSP开发}
-\cventry{2018/3--2019/12}{智能硬件部}{北京小米移动软件科技有限公司}{}{}{
+\cventry{2016/9--2020/6}{智能硬件部}{北京小米移动软件科技有限公司}{}{}{
 \textbf{工作描述：}
 \begin{itemize}
-   \item 负责 Android 系统硬件的相关驱动:MIPI DSI LCD/Touch Panel/Keypads/PA等相关驱动
+   \item 负责 Android 系统硬件的相关驱动:MIPI DSI LCD / Touch Panel / Keypads / PA等相关驱动
    \item 配合硬件开发完成产品的验证、测试
    \item 与第三方合作开发工厂测试 ROM
 \end{itemize}
@@ -80,31 +133,11 @@
 \begin{itemize}
    \item 小爱触屏音箱
    \begin{itemize}
-      \item Camera/Ext PA/ALSPS/MIPI LCM/Touch/PMIC/Keypad 等驱动适配
-      \item 积累了Camera Porting的相关经验,熟悉Camera的硬件电路链接,熟悉CCI/CSI的相关概念
-      \item MTK SecureBoot v2.1/更新 dm-verity 证书/更新 platform 等证书/DA 相关工作
-      \item OTA包全量/查量编译等, 积累了UpdateEngine/Bootctl的相关经验
-      \item 工厂模式定制/集成工厂端测试 熟悉Factory init流程
-   \end{itemize}
-\end{itemize}
-}
-
-\subsection{Android 驱动工程师}
-\cventry{2016/9--2018/03}{软件一部}{北京小鸟听听科技有限公司}{}{}{
-\textbf{工作描述：}:
-\begin{itemize}
-   \item 负责 Audio ADC/DAC 驱动
-   \item 负责 Android Recoery 二次开发(UI), 扩展 updater 功能, 实现系统升级 UI 的客制化
-   \item 负责 MIPI/TP 驱动
-\end{itemize}
-\textbf{项目经验:}
-\begin{itemize}
-\item 触屏音箱
-   \begin{itemize}
-      \item 完成 Android 系统 OTA 定制, 扩展了 Recovery OTA 的脚本功能(通过扩展 edify 实现)
-      \item 完成 ADC 驱动适配,DAC 驱动开发(TI)
-      \item 完成 MIPI AMOLED 驱动的适配与调试
-      \item 完成电容触摸屏的驱动适配
+      \item Camera / Ext PA / ALSPS / MIPI LCM / Touch / PMIC / Keypad 等驱动适配
+      \item 积累了Camera Porting的相关经验,熟悉Camera的硬件电路链接,熟悉CCI / CSI的相关概念
+      \item MTK SecureBoot v2.1 / 更新 dm-verity 证书 / 更新 platform 等证书 / DA 相关工作
+      \item OTA包全量 / 查量编译等, 积累了UpdateEngine / Bootctl的相关经验
+      \item 工厂模式定制 / 集成工厂端测试 熟悉Factory init流程
    \end{itemize}
 \end{itemize}
 }
@@ -114,8 +147,8 @@
 \textbf{工作描述：}
 \begin{itemize}
    \item 负责 FPGA 驱动相关的开发工作
-   \item 基于 Buildroot 构建 Bootloader/Linux Kernel/Ramdisk 整个操作系统
-   \item 使用 libevent/libcurl/libjson-cpp/libconfig,构建应用端的运行框架
+   \item 基于 Buildroot 构建 Bootloader / Linux Kernel / Ramdisk 整个操作系统
+   \item 使用 libevent / libcurl / libjson-cpp / libconfig,构建应用端的运行框架
    \item 负责系统软件的整体构建, A/B 升级策略在 linux 系统下的实现
 \end{itemize}
 \textbf{项目经验:}
